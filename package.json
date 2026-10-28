@@ -1,0 +1,18 @@
+{
+  "name": "stetica-web-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marlowe Rue — a demonstration website for a fictional US skin studio, with design research, a design system and a reusable aesthetics-website skill.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs && node --check js/main.js && node --check js/booking.js",
+    "sync-skill": "node -e \"require('node:fs').cpSync('skills/aesthetics-web-design/SKILL.md','.claude/skills/aesthetics-web-design/SKILL.md')\"",
+    "test": "npm run check"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}
