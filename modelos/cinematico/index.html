@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Corvelle Skin Studio</title>
+<meta name="description" content="Cinematic demonstration website for Corvelle, a fictional skin studio in Los Angeles: slow facials, published running times and prices, and a demo booking flow.">
+<meta name="theme-color" content="#18110F">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2318110F'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Georgia,serif' font-size='38' fill='%23E9AC6E'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+<link rel="preload" href="assets/fonts/gloock.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/schibsted-grotesk-var.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/cine.css">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- Persistent overlays: film grain + scroll timecode -->
+<div class="grain" aria-hidden="true"></div>
+
+<header class="bar" data-bar>
+  <a class="mark" href="#opening" aria-label="Corvelle, back to the opening">Corvelle</a>
+  <p class="readout" aria-hidden="true">
+    <span class="readout__scene" data-scene>Opening</span>
+    <span class="readout__tc" data-timecode>00:00:00:00</span>
+  </p>
+  <nav class="bar__nav" id="scene-menu" aria-label="Main">
+    <p class="bar__menu-title" aria-hidden="true">Scene selection</p>
+    <ol>
+      <li><a href="#treatments" data-scene-link><span class="bar__num" aria-hidden="true">01</span>Treatments</a></li>
+      <li><a href="#ritual" data-scene-link><span class="bar__num" aria-hidden="true">02</span>The ritual</a></li>
+      <li><a href="#stills" data-scene-link><span class="bar__num" aria-hidden="true">03</span>Gallery</a></li>
+      <li><a href="#prices" data-scene-link><span class="bar__num" aria-hidden="true">04</span>Prices</a></li>
+      <li><a href="#contact" data-scene-link><span class="bar__num" aria-hidden="true">05</span>Contact</a></li>
+    </ol>
+    <a class="btn btn--tungsten bar__menu-book" href="#book">Book an appointment</a>
+  </nav>
+  <a class="btn btn--tungsten bar__book" href="#book">Book</a>
+  <button class="bar__toggle" type="button" aria-expanded="false" aria-controls="scene-menu" data-menu-toggle>Scenes</button>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <!-- OPENING -->
+  <section class="opening" id="opening" data-scene-name="Opening" aria-labelledby="opening-title">
+    <div class="opening__frame">
+      <canvas class="opening__light" data-light aria-hidden="true"></canvas>
+      <figure class="opening__photo frame" data-slate="Opening shot. Hands at work in warm, low light."><img src="https://images.unsplash.com/photo-1598901986949-f593ff2a31a6?auto=format&amp;fit=crop&amp;q=70&amp;w=1280&amp;h=720" srcset="https://images.unsplash.com/photo-1598901986949-f593ff2a31a6?auto=format&amp;fit=crop&amp;q=70&amp;w=640&amp;h=360 640w, https://images.unsplash.com/photo-1598901986949-f593ff2a31a6?auto=format&amp;fit=crop&amp;q=70&amp;w=1280&amp;h=720 1280w, https://images.unsplash.com/photo-1598901986949-f593ff2a31a6?auto=format&amp;fit=crop&amp;q=70&amp;w=1920&amp;h=1080 1920w, https://images.unsplash.com/photo-1598901986949-f593ff2a31a6?auto=format&amp;fit=crop&amp;q=70&amp;w=2560&amp;h=1440 2560w" sizes="100vw" width="16" height="9" alt="Hands massaging a face in a dim room with warm light" loading="eager" fetchpriority="high" decoding="async"></figure>
+      <div class="opening__vignette" aria-hidden="true"></div>
+      <div class="letterbox letterbox--top" aria-hidden="true"></div>
+      <div class="letterbox letterbox--bottom" aria-hidden="true"></div>
+
+      <div class="opening__card">
+        <p class="opening__presents">A skin studio in Los Angeles</p>
+        <p class="opening__name" aria-hidden="true"><span>C</span><span>o</span><span>r</span><span>v</span><span>e</span><span>l</span><span>l</span><span>e</span></p>
+      </div>
+      <div class="opening__subtitle">
+        <h1 id="opening-title">Facials with the lights down and time slowed to your pace.</h1>
+        <div class="opening__actions">
+          <a class="btn btn--tungsten" href="#book">Book an appointment</a>
+          <a class="btn btn--ghost" href="#treatments">See the treatments</a>
+        </div>
+      </div>
+      <p class="opening__hint" aria-hidden="true">Scroll to play</p>
+    </div>
+    <p class="demo-strip">Demonstration website. Corvelle is a fictional studio: prices, people, reviews and the address are examples, and the photos are stock images.</p>
+  </section>
+
+  <!-- PROLOGUE -->
+  <section class="scene prologue" data-scene-name="Prologue" aria-labelledby="prologue-title">
+    <div class="wrap prologue__grid">
+      <div class="prologue__copy reveal">
+        <p class="scene__slate" aria-hidden="true">Prologue</p>
+        <h2 id="prologue-title">Three rooms. One appointment at a time. Nobody rushing the scene.</h2>
+        <p class="lead">Corvelle was built like a small set: low tungsten light, warm towels, no music unless you ask for it. Your esthetician stays with you from consultation to the last step.</p>
+        <p>Every running time and price is published below, so the only surprise is how calm an hour can feel.</p>
+      </div>
+      <div class="prologue__frames">
+        <figure class="frame frame--tall reveal" data-slate="Still. Portrait behind glass, eyes closed."><img src="https://images.unsplash.com/photo-1555820585-c5ae44394b79?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1067" srcset="https://images.unsplash.com/photo-1555820585-c5ae44394b79?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=640 480w, https://images.unsplash.com/photo-1555820585-c5ae44394b79?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1067 800w, https://images.unsplash.com/photo-1555820585-c5ae44394b79?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=1600 1200w, https://images.unsplash.com/photo-1555820585-c5ae44394b79?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=2133 1600w" sizes="(min-width: 64em) 26vw, 55vw" width="3" height="4" alt="Portrait of a woman with closed eyes seen through glass" loading="lazy" decoding="async"></figure>
+        <figure class="frame frame--square reveal" data-slate="Insert. Warm stones on linen."><img src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=800" srcset="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=480 480w, https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=800 800w, https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=1200 1200w, https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=1600 1600w" sizes="(min-width: 64em) 18vw, 38vw" width="1" height="1" alt="Smooth black stones resting on a person’s back" loading="lazy" decoding="async"></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- TREATMENTS: shot list -->
+  <section class="scene treatments" id="treatments" data-scene-name="Treatments" aria-labelledby="treatments-title">
+    <div class="wrap">
+      <header class="scene__head reveal">
+        <p class="scene__slate" aria-hidden="true">Scene 01</p>
+        <h2 id="treatments-title">Treatments</h2>
+        <p>Six treatments, each with its running time and price. <span class="tag">Example prices</span></p>
+      </header>
+
+      <ol class="shots">
+        <li class="shot reveal" data-treatment data-id="signature" data-name="Signature Ritual" data-duration="90" data-price="240">
+          <figure class="frame frame--wide" data-slate="Shot 1. Face mask, soft top light."><img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335" srcset="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=201 480w, https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335 800w, https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=502 1200w, https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=669 1600w" sizes="(min-width: 64em) 22rem, 100vw" width="239" height="100" alt="A woman relaxing with a facial mask during a spa treatment" loading="lazy" decoding="async"></figure>
+          <div class="shot__body">
+            <h3>Signature Ritual</h3>
+            <p>Double cleanse, enzyme exfoliation, extractions if needed, a long sculpting massage and a mask chosen on the day.</p>
+          </div>
+          <dl class="shot__meta">
+            <div><dt>Running time</dt><dd>90 min</dd></div>
+            <div><dt>Price</dt><dd class="shot__price">$240</dd></div>
+          </dl>
+          <a class="shot__book" href="#book" data-book="signature">Book this<span class="visually-hidden"> — Signature Ritual</span></a>
+        </li>
+        <li class="shot reveal" data-treatment data-id="custom-facial" data-name="Custom Facial" data-duration="60" data-price="175">
+          <figure class="frame frame--wide" data-slate="Shot 2. Skincare treatment, close-up."><img src="https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335" srcset="https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=201 480w, https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335 800w, https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=502 1200w, https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=669 1600w" sizes="(min-width: 64em) 22rem, 100vw" width="239" height="100" alt="A woman receiving a facial skincare treatment" loading="lazy" decoding="async"></figure>
+          <div class="shot__body">
+            <h3>Custom Facial</h3>
+            <p>Built around what your skin needs that day: cleanse, treat, massage, protect.</p>
+          </div>
+          <dl class="shot__meta">
+            <div><dt>Running time</dt><dd>60 min</dd></div>
+            <div><dt>Price</dt><dd class="shot__price">$175</dd></div>
+          </dl>
+          <a class="shot__book" href="#book" data-book="custom-facial">Book this<span class="visually-hidden"> — Custom Facial</span></a>
+        </li>
+        <li class="shot reveal" data-treatment data-id="peel" data-name="Chemical Peel" data-duration="45" data-price="165">
+          <figure class="frame frame--wide" data-slate="Shot 3. Peel applied with a brush."><img src="https://images.unsplash.com/photo-1713085085470-fba013d67e65?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335" srcset="https://images.unsplash.com/photo-1713085085470-fba013d67e65?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=201 480w, https://images.unsplash.com/photo-1713085085470-fba013d67e65?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335 800w, https://images.unsplash.com/photo-1713085085470-fba013d67e65?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=502 1200w, https://images.unsplash.com/photo-1713085085470-fba013d67e65?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=669 1600w" sizes="(min-width: 64em) 22rem, 100vw" width="239" height="100" alt="A practitioner applying a facial peel" loading="lazy" decoding="async"></figure>
+          <div class="shot__body">
+            <h3>Chemical Peel</h3>
+            <p>A professional peel matched to your skin's tolerance, with a patch test on your first visit.</p>
+          </div>
+          <dl class="shot__meta">
+            <div><dt>Running time</dt><dd>45 min</dd></div>
+            <div><dt>Price</dt><dd class="shot__price">$165</dd></div>
+          </dl>
+          <a class="shot__book" href="#book" data-book="peel">Book this<span class="visually-hidden"> — Chemical Peel</span></a>
+        </li>
+        <li class="shot reveal" data-treatment data-id="hydration" data-name="Deep Hydration" data-duration="60" data-price="180">
+          <figure class="frame frame--wide" data-slate="Shot 4. Rich cream mask, resting."><img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335" srcset="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=201 480w, https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335 800w, https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=502 1200w, https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=669 1600w" sizes="(min-width: 64em) 22rem, 100vw" width="239" height="100" alt="A woman resting with white cream on her face" loading="lazy" decoding="async"></figure>
+          <div class="shot__body">
+            <h3>Deep Hydration</h3>
+            <p>Layered serums, a cooling cream mask and barrier-supporting massage for tight, dry skin.</p>
+          </div>
+          <dl class="shot__meta">
+            <div><dt>Running time</dt><dd>60 min</dd></div>
+            <div><dt>Price</dt><dd class="shot__price">$180</dd></div>
+          </dl>
+          <a class="shot__book" href="#book" data-book="hydration">Book this<span class="visually-hidden"> — Deep Hydration</span></a>
+        </li>
+        <li class="shot reveal" data-treatment data-id="led" data-name="LED Light Therapy" data-duration="30" data-price="90">
+          <figure class="frame frame--wide" data-slate="Shot 5. Facial massage at the spa."><img src="https://images.unsplash.com/photo-1706795033728-9232ef548a16?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335" srcset="https://images.unsplash.com/photo-1706795033728-9232ef548a16?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=201 480w, https://images.unsplash.com/photo-1706795033728-9232ef548a16?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335 800w, https://images.unsplash.com/photo-1706795033728-9232ef548a16?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=502 1200w, https://images.unsplash.com/photo-1706795033728-9232ef548a16?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=669 1600w" sizes="(min-width: 64em) 22rem, 100vw" width="239" height="100" alt="A woman receiving a facial massage at a spa" loading="lazy" decoding="async"></figure>
+          <div class="shot__body">
+            <h3>LED Light Therapy</h3>
+            <p>Thirty quiet minutes under a professional LED panel, on its own or added to any facial for $45.</p>
+          </div>
+          <dl class="shot__meta">
+            <div><dt>Running time</dt><dd>30 min</dd></div>
+            <div><dt>Price</dt><dd class="shot__price">$90</dd></div>
+          </dl>
+          <a class="shot__book" href="#book" data-book="led">Book this<span class="visually-hidden"> — LED Light Therapy</span></a>
+        </li>
+        <li class="shot reveal" data-treatment data-id="body" data-name="Hot Stone Body Ritual" data-duration="75" data-price="210">
+          <figure class="frame frame--wide" data-slate="Shot 6. Hot stones and white flowers."><img src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335" srcset="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=201 480w, https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=335 800w, https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=502 1200w, https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=669 1600w" sizes="(min-width: 64em) 22rem, 100vw" width="239" height="100" alt="A hot stone massage with white flowers on the table" loading="lazy" decoding="async"></figure>
+          <div class="shot__body">
+            <h3>Hot Stone Body Ritual</h3>
+            <p>Full-body exfoliation, warm stone massage along the back and shoulders, and a rich body oil to finish.</p>
+          </div>
+          <dl class="shot__meta">
+            <div><dt>Running time</dt><dd>75 min</dd></div>
+            <div><dt>Price</dt><dd class="shot__price">$210</dd></div>
+          </dl>
+          <a class="shot__book" href="#book" data-book="body">Book this<span class="visually-hidden"> — Hot Stone Body Ritual</span></a>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- RITUAL: editing timeline -->
+  <section class="scene ritual" id="ritual" data-scene-name="The ritual" aria-labelledby="ritual-title">
+    <div class="wrap">
+      <header class="scene__head reveal">
+        <p class="scene__slate" aria-hidden="true">Scene 02</p>
+        <h2 id="ritual-title">The Signature Ritual, cut by cut</h2>
+        <p>Ninety minutes, laid out like an edit. Each clip is drawn to the length of time it takes.</p>
+      </header>
+
+      <div class="timeline reveal" data-timeline>
+        <div class="timeline__ruler" aria-hidden="true">
+          <span style="--at:0">00:00</span><span style="--at:.1667">00:15</span><span style="--at:.3333">00:30</span><span style="--at:.5">00:45</span><span style="--at:.6667">01:00</span><span style="--at:.8333">01:15</span><span style="--at:1">01:30</span>
+        </div>
+        <ol class="timeline__track">
+          <li class="clip" style="--start:0;--len:15">
+            <span class="clip__tc">00:00 – 00:15</span>
+            <h3 class="clip__title">Consultation</h3>
+            <p>We talk through your skin, routine and goals before anything touches your face.</p>
+          </li>
+          <li class="clip" style="--start:15;--len:20">
+            <span class="clip__tc">00:15 – 00:35</span>
+            <h3 class="clip__title">Cleanse and read</h3>
+            <p>A double cleanse under magnification so we can see what your skin is doing.</p>
+          </li>
+          <li class="clip clip--key" style="--start:35;--len:40">
+            <span class="clip__tc">00:35 – 01:15</span>
+            <h3 class="clip__title">The treatment</h3>
+            <p>Exfoliation, extractions where needed, and a long sculpting massage. The main feature.</p>
+          </li>
+          <li class="clip" style="--start:75;--len:15">
+            <span class="clip__tc">01:15 – 01:30</span>
+            <h3 class="clip__title">Finish and notes</h3>
+            <p>Mask, protection, and a short written note of what we did and what to use at home.</p>
+          </li>
+        </ol>
+        <div class="timeline__playhead" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STILLS: gallery -->
+  <section class="scene stills" id="stills" data-scene-name="Gallery" aria-labelledby="stills-title">
+    <div class="wrap">
+      <header class="scene__head reveal">
+        <p class="scene__slate" aria-hidden="true">Scene 03</p>
+        <h2 id="stills-title">Gallery</h2>
+        <p>The mood of the studio, in stills. Stock photography for this demo, not our clients or results.</p>
+      </header>
+    </div>
+    <div class="reel" data-reel>
+      <ul class="reel__track" data-reel-track>
+        <li><figure class="frame frame--still" data-slate="Still 1. Amber dropper bottle."><img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000" srcset="https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=600 480w, https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000 800w, https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=1500 1200w, https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=2000 1600w" sizes="(min-width: 40em) 24rem, 62vw" width="4" height="5" alt="A hand holding an amber glass dropper bottle" loading="lazy" decoding="async"><figcaption>Still 1</figcaption></figure></li>
+        <li><figure class="frame frame--still" data-slate="Still 2. Resting, cucumber over the eyes."><img src="https://images.unsplash.com/photo-1531299244174-d247dd4e5a66?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000" srcset="https://images.unsplash.com/photo-1531299244174-d247dd4e5a66?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=600 480w, https://images.unsplash.com/photo-1531299244174-d247dd4e5a66?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000 800w, https://images.unsplash.com/photo-1531299244174-d247dd4e5a66?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=1500 1200w, https://images.unsplash.com/photo-1531299244174-d247dd4e5a66?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=2000 1600w" sizes="(min-width: 40em) 24rem, 62vw" width="4" height="5" alt="A woman in a robe resting with cucumber slices over her eyes" loading="lazy" decoding="async"><figcaption>Still 2</figcaption></figure></li>
+        <li><figure class="frame frame--still" data-slate="Still 3. Brush, white cream."><img src="https://images.unsplash.com/photo-1761718209835-c8586b7dcac0?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000" srcset="https://images.unsplash.com/photo-1761718209835-c8586b7dcac0?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=600 480w, https://images.unsplash.com/photo-1761718209835-c8586b7dcac0?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000 800w, https://images.unsplash.com/photo-1761718209835-c8586b7dcac0?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=1500 1200w, https://images.unsplash.com/photo-1761718209835-c8586b7dcac0?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=2000 1600w" sizes="(min-width: 40em) 24rem, 62vw" width="4" height="5" alt="A brush applying white cream to a face" loading="lazy" decoding="async"><figcaption>Still 3</figcaption></figure></li>
+        <li><figure class="frame frame--still" data-slate="Still 4. Cream from a pump bottle."><img src="https://images.unsplash.com/photo-1619451427882-6aaaded0cc61?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000" srcset="https://images.unsplash.com/photo-1619451427882-6aaaded0cc61?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=600 480w, https://images.unsplash.com/photo-1619451427882-6aaaded0cc61?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000 800w, https://images.unsplash.com/photo-1619451427882-6aaaded0cc61?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=1500 1200w, https://images.unsplash.com/photo-1619451427882-6aaaded0cc61?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=2000 1600w" sizes="(min-width: 40em) 24rem, 62vw" width="4" height="5" alt="Hands dispensing cream from a pump bottle" loading="lazy" decoding="async"><figcaption>Still 4</figcaption></figure></li>
+        <li><figure class="frame frame--still" data-slate="Still 5. Facial massage."><img src="https://images.unsplash.com/photo-1643684391140-c5056cfd3436?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000" srcset="https://images.unsplash.com/photo-1643684391140-c5056cfd3436?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=600 480w, https://images.unsplash.com/photo-1643684391140-c5056cfd3436?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000 800w, https://images.unsplash.com/photo-1643684391140-c5056cfd3436?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=1500 1200w, https://images.unsplash.com/photo-1643684391140-c5056cfd3436?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=2000 1600w" sizes="(min-width: 40em) 24rem, 62vw" width="4" height="5" alt="Hands giving a woman a facial massage" loading="lazy" decoding="async"><figcaption>Still 5</figcaption></figure></li>
+        <li><figure class="frame frame--still" data-slate="Still 6. Back massage, low light."><img src="https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000" srcset="https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&amp;fit=crop&amp;q=70&amp;w=480&amp;h=600 480w, https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&amp;fit=crop&amp;q=70&amp;w=800&amp;h=1000 800w, https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&amp;fit=crop&amp;q=70&amp;w=1200&amp;h=1500 1200w, https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&amp;fit=crop&amp;q=70&amp;w=1600&amp;h=2000 1600w" sizes="(min-width: 40em) 24rem, 62vw" width="4" height="5" alt="A back massage in low light" loading="lazy" decoding="async"><figcaption>Still 6</figcaption></figure></li>
+      </ul>
+    </div>
+    <div class="wrap reel__controls">
+      <button type="button" class="btn btn--ghost" data-reel-prev>Previous still</button>
+      <button type="button" class="btn btn--ghost" data-reel-next>Next still</button>
+    </div>
+  </section>
+
+  <!-- REVIEWS as subtitles -->
+  <section class="scene reviews" data-scene-name="Reviews" aria-labelledby="reviews-title">
+    <div class="wrap">
+      <header class="scene__head reveal">
+        <p class="scene__slate" aria-hidden="true">Interlude</p>
+        <h2 id="reviews-title">What clients say</h2>
+        <p><span class="tag">Demonstration content</span> Written for this demo to show the layout. Not real reviews.</p>
+      </header>
+      <div class="subtitles reveal" data-subtitles>
+        <blockquote class="subtitle is-active">
+          <p>“First facial where I actually fell asleep. Nobody tried to sell me anything on the way out.”</p>
+          <footer>Sample client, Signature Ritual</footer>
+        </blockquote>
+        <blockquote class="subtitle">
+          <p>“They explained every step of the peel before starting. I always knew what was happening.”</p>
+          <footer>Sample client, Chemical Peel</footer>
+        </blockquote>
+        <blockquote class="subtitle">
+          <p>“The price online was the price at the desk. That alone made me rebook.”</p>
+          <footer>Sample client, Custom Facial</footer>
+        </blockquote>
+      </div>
+      <div class="subtitles__controls">
+        <button type="button" class="btn btn--ghost" data-sub-prev>Previous review</button>
+        <span class="subtitles__count" data-sub-count aria-live="polite">1 of 3</span>
+        <button type="button" class="btn btn--ghost" data-sub-next>Next review</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICES -->
+  <section class="scene prices" id="prices" data-scene-name="Prices" aria-labelledby="prices-title">
+    <div class="wrap">
+      <header class="scene__head reveal">
+        <p class="scene__slate" aria-hidden="true">Scene 04</p>
+        <h2 id="prices-title">Running times and prices</h2>
+        <p>Consultation, aftercare notes and a follow-up message are included in every price. <span class="tag">Example prices</span></p>
+      </header>
+      <div class="price-cols">
+        <section class="price-col reveal" aria-labelledby="pc-face">
+          <h3 id="pc-face">Face</h3>
+          <ul class="price-list">
+            <li><span>Signature Ritual</span><span class="price-list__time">90 min</span><span class="price-list__price">$240</span></li>
+            <li><span>Custom Facial</span><span class="price-list__time">60 min</span><span class="price-list__price">$175</span></li>
+            <li><span>Deep Hydration</span><span class="price-list__time">60 min</span><span class="price-list__price">$180</span></li>
+            <li><span>Chemical Peel</span><span class="price-list__time">45 min</span><span class="price-list__price">$165</span></li>
+            <li><span>LED Light Therapy</span><span class="price-list__time">30 min</span><span class="price-list__price">$90</span></li>
+          </ul>
+        </section>
+        <section class="price-col reveal" aria-labelledby="pc-body">
+          <h3 id="pc-body">Body and add-ons</h3>
+          <ul class="price-list">
+            <li><span>Hot Stone Body Ritual</span><span class="price-list__time">75 min</span><span class="price-list__price">$210</span></li>
+            <li><span>LED add-on</span><span class="price-list__time">+20 min</span><span class="price-list__price">$45</span></li>
+            <li><span>Dermaplaning add-on</span><span class="price-list__time">+15 min</span><span class="price-list__price">$55</span></li>
+            <li><span>Eye treatment add-on</span><span class="price-list__time">+10 min</span><span class="price-list__price">$30</span></li>
+          </ul>
+        </section>
+      </div>
+      <div class="pass reveal">
+        <div>
+          <h3>Monthly membership</h3>
+          <p>One Custom Facial a month, 10% off products, and unused visits roll over for 60 days.</p>
+        </div>
+        <p class="pass__price"><span>$160</span> per month</p>
+        <a class="btn btn--tungsten" href="#book" data-book="custom-facial">Book your first facial</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <section class="scene booking" id="book" data-scene-name="Booking" aria-labelledby="book-title">
+    <div class="wrap booking__grid">
+      <div class="booking__intro reveal">
+        <p class="scene__slate" aria-hidden="true">Call time</p>
+        <h2 id="book-title">Book an appointment</h2>
+        <p>Choose a treatment, pick a time, and leave your details.</p>
+        <p class="booking__notice"><strong>This is a demonstration.</strong> No appointment is created and nothing is emailed. A live site would connect this to a booking system such as Square, Vagaro, Boulevard or Acuity.</p>
+        <ol class="steps" aria-label="Booking progress" data-steps>
+          <li aria-current="step">Treatment</li>
+          <li>Date and time</li>
+          <li>Your details</li>
+          <li>Review</li>
+        </ol>
+      </div>
+
+      <form class="booking__form" data-booking novalidate>
+        <fieldset class="booking__step" data-step="1">
+          <legend>Choose a treatment</legend>
+          <div class="option-list" data-treatment-options></div>
+          <p class="field-error" data-error-for="treatment" hidden></p>
+          <div class="booking__nav"><button type="button" class="btn btn--tungsten" data-next>Continue to date and time</button></div>
+        </fieldset>
+        <fieldset class="booking__step" data-step="2" hidden>
+          <legend>Pick a date and time</legend>
+          <p class="booking__hint">Open Tuesday to Sunday. Struck-through times are already taken in this demo.</p>
+          <div class="date-strip" role="radiogroup" aria-label="Available dates" data-dates></div>
+          <div class="slot-grid" role="radiogroup" aria-label="Available times" data-slots></div>
+          <p class="field-error" data-error-for="slot" hidden></p>
+          <div class="booking__nav">
+            <button type="button" class="btn btn--ghost" data-back>Back</button>
+            <button type="button" class="btn btn--tungsten" data-next>Continue to your details</button>
+          </div>
+        </fieldset>
+        <fieldset class="booking__step" data-step="3" hidden>
+          <legend>Your details</legend>
+          <div class="field"><label for="b-name">Full name</label><input id="b-name" name="name" type="text" autocomplete="name" required><p class="field-error" id="b-name-error" hidden></p></div>
+          <div class="field"><label for="b-email">Email</label><input id="b-email" name="email" type="email" autocomplete="email" required><p class="field-error" id="b-email-error" hidden></p></div>
+          <div class="field"><label for="b-phone">Phone <span class="optional">(optional)</span></label><input id="b-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel"><p class="field-error" id="b-phone-error" hidden></p></div>
+          <div class="field"><label for="b-notes">Anything we should know? <span class="optional">(optional)</span></label><textarea id="b-notes" name="notes" rows="3" maxlength="500"></textarea></div>
+          <div class="field field--check"><input id="b-first" name="firstVisit" type="checkbox"><label for="b-first">This is my first visit</label></div>
+          <div class="booking__nav">
+            <button type="button" class="btn btn--ghost" data-back>Back</button>
+            <button type="button" class="btn btn--tungsten" data-next>Review appointment</button>
+          </div>
+        </fieldset>
+        <fieldset class="booking__step" data-step="4" hidden>
+          <legend>Review your appointment</legend>
+          <dl class="summary" data-summary></dl>
+          <div class="booking__nav">
+            <button type="button" class="btn btn--ghost" data-back>Edit details</button>
+            <button type="submit" class="btn btn--tungsten">Request appointment (demo)</button>
+          </div>
+        </fieldset>
+        <div class="booking__done" data-step="done" hidden tabindex="-1">
+          <h3>That's a wrap on the demo</h3>
+          <p data-done-text></p>
+          <p>Nothing has been booked and no confirmation email has been sent.</p>
+          <button type="button" class="btn btn--ghost" data-restart>Start a new booking</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="scene faq" data-scene-name="Questions" aria-labelledby="faq-title">
+    <div class="wrap faq__grid">
+      <h2 id="faq-title" class="reveal">Before your first visit</h2>
+      <div class="faq__list reveal">
+        <details><summary>How early should I arrive?</summary><p>Ten minutes is plenty. First visits include a 15-minute consultation inside the booked time.</p></details>
+        <details><summary>Can I come wearing makeup?</summary><p>Yes. Cleansing is the first step of every facial.</p></details>
+        <details><summary>What is the cancellation policy?</summary><p>Cancel or move your appointment free of charge up to 24 hours before. In this example policy, later cancellations are charged at 50%.</p></details>
+        <details><summary>Do you offer injectables?</summary><p>No. Corvelle offers esthetic treatments only. If something needs medical care, we will suggest a board-certified dermatologist.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="scene contact" id="contact" data-scene-name="Contact" aria-labelledby="contact-title">
+    <div class="wrap contact__grid">
+      <div class="contact__info reveal">
+        <p class="scene__slate" aria-hidden="true">Scene 05</p>
+        <h2 id="contact-title">Find the studio</h2>
+        <address>
+          <p class="contact__address">1180 Demonstration Blvd<br>Los Angeles, CA 90038 <span class="tag">Fictional address</span></p>
+          <p class="contact__line"><span class="contact__label">Phone</span> <a href="tel:+13235550187">(323) 555-0187</a> <span class="optional">a 555 number reserved for fiction</span></p>
+          <p class="contact__line"><span class="contact__label">Email</span> <a href="mailto:hello@corvelle.example">hello@corvelle.example</a></p>
+          <p class="contact__line"><span class="contact__label">Instagram</span> <button type="button" class="linklike" data-placeholder="Instagram">@corvelle (placeholder)</button></p>
+        </address>
+        <table class="hours">
+          <caption>Opening hours</caption>
+          <tbody>
+            <tr><th scope="row">Monday</th><td>Closed</td></tr>
+            <tr><th scope="row">Tuesday to Friday</th><td>10:00 am – 7:00 pm</td></tr>
+            <tr><th scope="row">Saturday</th><td>9:00 am – 5:00 pm</td></tr>
+            <tr><th scope="row">Sunday</th><td>11:00 am – 4:00 pm</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <form class="contact__form reveal" data-contact novalidate>
+        <h3>Send a message</h3>
+        <div class="field"><label for="c-name">Name</label><input id="c-name" name="name" type="text" autocomplete="name" required><p class="field-error" id="c-name-error" hidden></p></div>
+        <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="email" required><p class="field-error" id="c-email-error" hidden></p></div>
+        <div class="field"><label for="c-message">Message</label><textarea id="c-message" name="message" rows="5" required minlength="10" maxlength="1000"></textarea><p class="field-error" id="c-message-error" hidden></p></div>
+        <button type="submit" class="btn btn--tungsten">Send message (demo)</button>
+        <p class="optional">Demo form: your message is checked in the browser but not sent anywhere.</p>
+        <div class="form-status" role="status" data-contact-status></div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<!-- END CREDITS -->
+<footer class="credits" aria-labelledby="credits-title">
+  <div class="credits__roll" data-credits>
+    <h2 id="credits-title" class="credits__title">Corvelle</h2>
+    <p class="credits__tagline">A demonstration website for a fictional skin studio</p>
+    <dl class="credits__list">
+      <div><dt>Studio</dt><dd>1180 Demonstration Blvd, Los Angeles</dd></div>
+      <div><dt>Phone</dt><dd><a href="tel:+13235550187">(323) 555-0187</a></dd></div>
+      <div><dt>Photography</dt><dd>Katherine Hanlon, Sunny Ng, engin akyurt, Rosa Rafael, karelys Ruiz, Look Studio, Anna Keibalo, Christin Hume, Adrian Motroc, kimia kazemi, Nataliya Melnychuk, Dominique Rivas, Toa Heftiba, via Unsplash</dd></div>
+      <div><dt>Typefaces</dt><dd>Gloock and Schibsted Grotesk, SIL Open Font License</dd></div>
+      <div><dt>Booking system</dt><dd>Not connected (demonstration)</dd></div>
+      <div><dt>Reviews</dt><dd>Written for the demo, not real clients</dd></div>
+    </dl>
+    <p class="credits__cta"><a class="btn btn--tungsten" href="#book">Book an appointment</a></p>
+    <ul class="credits__legal">
+      <li><a href="#opening">Back to the opening</a></li>
+      <li><button type="button" class="linklike" data-placeholder="Privacy policy">Privacy policy (placeholder)</button></li>
+      <li><button type="button" class="linklike" data-placeholder="Terms">Terms (placeholder)</button></li>
+    </ul>
+    <p class="credits__end">© <span data-year>2026</span> Corvelle. No real studio was harmed in the making of this website.</p>
+  </div>
+</footer>
+
+<div class="mobile-cta" data-mobile-cta>
+  <a class="btn btn--tungsten" href="#book">Book</a>
+  <a class="btn btn--ghost" href="tel:+13235550187">Call</a>
+</div>
+<div class="toast" role="status" aria-live="polite" data-toast hidden></div>
+
+<script src="js/cine.js" defer></script>
+<script src="js/booking.js" defer></script>
+</body>
+</html>
