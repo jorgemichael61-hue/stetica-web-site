@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Obscura Skin Lab</title>
+<meta name="description" content="Obscura Skin Lab is a fictional skin studio in Brooklyn, presented as a cinematic one-page demo: a scroll-driven WebGL film, treatments, studio and a demo booking form.">
+<meta name="theme-color" content="#070605">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23070605'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%23FF9A4D' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23FF9A4D'/%3E%3C/svg%3E">
+<link rel="preload" href="assets/fonts/instrument-serif.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/plex-mono.woff" as="font" type="font/woff" crossorigin>
+<style>
+/* ==========================================================================
+   OBSCURA SKIN LAB — cinematic one-page demo
+   Layout: a scroll-driven film (sticky WebGL stage, 7 chapters) inside an
+   instrument HUD, then a full-screen treatments reel, the studio, booking,
+   and a giant outlined name. Single dark theme by design (a darkroom).
+   ========================================================================== */
+@font-face { font-family: "Instrument Serif"; src: url("assets/fonts/instrument-serif.woff") format("woff"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Instrument Serif"; src: url("assets/fonts/instrument-serif-italic.woff") format("woff"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Instrument Sans"; src: url("assets/fonts/instrument-sans-var.woff") format("woff"); font-weight: 400 700; font-stretch: 75% 100%; font-display: swap; }
+@font-face { font-family: "Plex Mono"; src: url("assets/fonts/plex-mono.woff") format("woff"); font-weight: 400; font-display: swap; }
+
+:root {
+  color-scheme: dark;
+  --void: #070605;          /* the darkroom */
+  --soot: #120E0C;          /* raised panels */
+  --bone: #EFE6DA;          /* text */
+  --dim: #A0928A;           /* secondary text — 7:1 on void */
+  --ember: #FF9A4D;         /* incandescent edge — the one accent */
+  --flare: #FFD7A8;         /* flash highlight */
+  --error: #FFB4A0;
+  --line: rgb(239 230 218 / .14);
+  --line-hi: rgb(239 230 218 / .34);
+
+  --serif: "Instrument Serif", "Didot", Georgia, serif;
+  --sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --chapter-h: 250vh;
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  --pad-x: clamp(1rem, 4vw, 3.5rem);
+  --hud-inset: clamp(.75rem, 1.6vw, 1.25rem);
+  --ease: cubic-bezier(.22, .61, .2, 1);
+}
+@media (max-width: 47.99em) { :root { --chapter-h: 210vh; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: auto; }
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--bone);
+  font-family: var(--sans);
+  font-size: clamp(1rem, .97rem + .15vw, 1.0625rem);
+  line-height: 1.6;
+  overflow-x: clip;
+}
+body.is-loading { overflow: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 95; background: var(--void); }
+img { display: block; max-width: 100%; height: auto; }
+h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 400; line-height: 1; text-wrap: balance; }
+p { margin: 0 0 1rem; max-width: 62ch; }
+p:last-child { margin-bottom: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+.vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: fixed; left: 1rem; top: -10rem; z-index: 200; padding: .7rem 1rem; background: var(--ember); color: var(--void); font-family: var(--mono); font-size: .8rem; }
+.skip:focus { top: calc(env(safe-area-inset-top, 0px) + 1rem); }
+
+/* HUD type */
+.mono { font-family: var(--mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.chap { font-family: var(--mono); font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ember); }
+
+/* Square-cornered bracket frame, reused on panels */
+.bracket { position: relative; }
+.bracket::before, .bracket::after {
+  content: ""; position: absolute; pointer-events: none;
+  width: 14px; height: 14px; border: 1px solid var(--ember);
+}
+.bracket::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.bracket::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+  min-height: 2.875rem; padding: .7rem 1.3rem;
+  border: 1px solid var(--line-hi); border-radius: 0; background: transparent;
+  font-family: var(--mono); font-size: .76rem; letter-spacing: .1em; text-transform: uppercase;
+  text-decoration: none; line-height: 1.2;
+  transition: background-color .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease), box-shadow .5s var(--ease);
+}
+.btn:hover { border-color: var(--bone); }
+.btn--ember { background: var(--ember); border-color: var(--ember); color: var(--void); }
+.btn--ember:hover { background: var(--flare); border-color: var(--flare); box-shadow: 0 0 2.5rem rgb(255 154 77 / .4); }
+
+/* ---------------- Loader ---------------- */
+.loader { position: fixed; inset: 0; z-index: 150; display: grid; place-items: center; pointer-events: auto; }
+.loader__half { position: absolute; left: 0; right: 0; height: 50.5%; background: var(--void); transition: transform 1.25s var(--ease); }
+.loader__half--top { top: 0; border-bottom: 1px solid rgb(255 154 77 / .0); }
+.loader__half--bottom { bottom: 0; }
+.loader.is-open .loader__half--top { transform: translateY(-100%); }
+.loader.is-open .loader__half--bottom { transform: translateY(100%); }
+.loader.is-open { pointer-events: none; }
+.loader__seam { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--ember); box-shadow: 0 0 1.5rem var(--ember); transform: scaleX(var(--load, 0)); transition: transform .4s var(--ease), opacity .6s; z-index: 1; }
+.loader.is-open .loader__seam { opacity: 0; }
+.loader__read { position: relative; z-index: 2; display: grid; justify-items: center; gap: .9rem; text-align: center; padding-inline: var(--gutter-l) var(--gutter-r); transition: opacity .5s var(--ease); }
+.loader.is-open .loader__read { opacity: 0; }
+.loader__brand { font-family: var(--serif); font-size: clamp(2rem, 6vw, 3.25rem); line-height: 1; }
+.loader__count { color: var(--dim); }
+.loader__count b { color: var(--ember); font-weight: 400; }
+
+/* ---------------- HUD (fixed) ---------------- */
+.hud { position: fixed; inset: calc(env(safe-area-inset-top, 0px) + var(--hud-inset)) calc(env(safe-area-inset-right, 0px) + var(--hud-inset)) calc(env(safe-area-inset-bottom, 0px) + var(--hud-inset)) calc(env(safe-area-inset-left, 0px) + var(--hud-inset)); z-index: 60; pointer-events: none; }
+.hud__corner { position: absolute; width: 22px; height: 22px; border: 1px solid rgb(239 230 218 / .5); }
+.hud__corner--tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.hud__corner--tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.hud__corner--bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.hud__corner--br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+.hud__bar {
+  position: absolute; top: .55rem; left: 1.75rem; right: 1.75rem;
+  display: flex; align-items: center; gap: 1.5rem;
+  pointer-events: auto;
+}
+.hud__brand { display: grid; line-height: 1; text-decoration: none; }
+.hud__brand b { font-family: var(--serif); font-weight: 400; font-size: 1.55rem; letter-spacing: .01em; }
+.hud__brand span { margin-top: .25rem; color: var(--dim); font-size: .62rem; }
+.hud__read { display: flex; gap: 1rem; align-items: center; color: var(--dim); }
+.hud__rec { display: inline-flex; align-items: center; gap: .45rem; color: var(--ember); }
+.hud__rec::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--ember); box-shadow: 0 0 .6rem var(--ember); animation: rec 1.4s ease-in-out infinite; }
+@keyframes rec { 50% { opacity: .25; } }
+.hud__nav { margin-left: auto; display: flex; align-items: center; gap: 1.4rem; }
+.hud__nav ul { display: flex; gap: 1.4rem; }
+.hud__nav a:not(.btn) { color: var(--bone); text-decoration: none; padding-block: .5rem; opacity: .8; transition: opacity .3s, color .3s; }
+.hud__nav a:not(.btn):hover, .hud__nav a[aria-current="true"] { opacity: 1; color: var(--ember); }
+.hud__nav .btn { min-height: 2.5rem; padding: .55rem 1rem; }
+.hud__scrim { position: absolute; inset: calc(-1 * var(--hud-inset)) calc(-1 * var(--hud-inset)) auto; height: 6.5rem; background: linear-gradient(rgb(7 6 5 / .75), transparent); pointer-events: none; opacity: 0; transition: opacity .6s; }
+.hud.is-scrim .hud__scrim { opacity: 1; }
+@media (max-width: 52em) {
+  .hud__nav ul, .hud__read .hud__chap { display: none; }
+}
+@media (max-width: 30em) {
+  .hud__read { display: none; }
+  .hud__bar { left: 1.25rem; right: 1.25rem; }
+}
+
+/* ---------------- Film ---------------- */
+.film { position: relative; height: calc(7 * var(--chapter-h)); }
+.film__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--void); isolation: isolate; }
+.film__gl, .film__sparks, .film__fallback, .film__fallback img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.film__gl { z-index: 0; }
+.film__fallback { z-index: 0; }
+.film__fallback img { object-fit: cover; opacity: 0; transition: opacity .3s; }
+.film__fallback img.is-on { opacity: 1; }
+.film__sparks { z-index: 2; pointer-events: none; }
+.film__shade { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(90deg, rgb(7 6 5 / .78) 0%, rgb(7 6 5 / .35) 45%, transparent 70%), linear-gradient(transparent 60%, rgb(7 6 5 / .7)); }
+.film__bar { position: absolute; left: 0; right: 0; z-index: 4; height: calc(5vh + var(--burn, 0) * 7vh); background: #000; pointer-events: none; }
+.film__bar--top { top: 0; }
+.film__bar--bottom { bottom: 0; }
+.film__flash { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, rgb(255 215 168 / .9), rgb(255 154 77 / .25) 55%, transparent 80%); opacity: calc(var(--flash, 0) * .55); mix-blend-mode: screen; }
+
+.chapter {
+  position: absolute; z-index: 6;
+  left: calc(var(--pad-x) + env(safe-area-inset-left, 0px));
+  right: calc(var(--pad-x) + env(safe-area-inset-right, 0px));
+  top: 17vh; bottom: 18vh;
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); grid-template-rows: auto auto 1fr auto; column-gap: 4rem;
+  pointer-events: none;
+}
+.chapter.is-live { pointer-events: auto; }
+.chapter > * { will-change: opacity, transform; }
+.chapter .chap { grid-column: 1; margin-bottom: 1.25rem; }
+.chapter__title { grid-column: 1; font-size: clamp(3.4rem, 11vw, 10.5rem); line-height: .86; letter-spacing: -.02em; }
+.chapter__title em { font-style: italic; color: var(--ember); }
+.chapter__text { grid-column: 1; margin-top: 1.75rem; max-width: 34ch; font-size: clamp(1.05rem, 1rem + .35vw, 1.3rem); line-height: 1.45; }
+.chapter__count { grid-column: 2; grid-row: 1 / 3; align-self: end; justify-self: end; text-align: right; }
+.chapter__num { display: block; font-family: var(--serif); font-size: clamp(3rem, 6.5vw, 6rem); line-height: 1; color: var(--ember); font-variant-numeric: tabular-nums; text-shadow: 0 0 2rem rgb(255 154 77 / .35); }
+.chapter__unit { display: block; margin-top: .4rem; color: var(--dim); }
+.chapter__data { grid-column: 2; grid-row: 4; align-self: end; margin: 0; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line-hi); background: rgb(7 6 5 / .45); backdrop-filter: blur(6px); }
+.chapter__data div { padding: .7rem .8rem .75rem; border-bottom: 1px solid var(--line); }
+.chapter__data div:nth-child(odd) { border-right: 1px solid var(--line); }
+.chapter__data dt { color: var(--dim); font-family: var(--mono); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; }
+.chapter__data dd { margin: .15rem 0 0; font-family: var(--mono); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.chapter__demo { grid-column: 1; grid-row: 4; align-self: end; color: var(--dim); max-width: 40ch; }
+
+@media (max-width: 47.99em) {
+  .film__shade { background: linear-gradient(rgb(7 6 5 / .55), rgb(7 6 5 / .2) 30%, rgb(7 6 5 / .55) 55%, rgb(7 6 5 / .92)); }
+  .chapter { top: 13vh; bottom: 15vh; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto 1fr auto auto; column-gap: 0; }
+  .chapter__title { font-size: clamp(3rem, 17vw, 5.5rem); }
+  .chapter__text { margin-top: 1rem; font-size: 1rem; }
+  .chapter__count { grid-column: 1; grid-row: 5; justify-self: start; text-align: left; margin-bottom: .75rem; }
+  .chapter__num { font-size: 2.6rem; }
+  .chapter__data { grid-column: 1; grid-row: 6; }
+  .chapter__data dd { font-size: .8rem; }
+  .chapter__demo { display: none; }
+}
+
+/* Timeline (bottom of the film) */
+.reelline {
+  position: absolute; z-index: 7;
+  left: calc(var(--pad-x) + env(safe-area-inset-left, 0px)); right: calc(var(--pad-x) + env(safe-area-inset-right, 0px));
+  bottom: calc(5vh + 1.1rem + env(safe-area-inset-bottom, 0px));
+}
+.reelline__track { position: relative; height: 1px; background: var(--line-hi); }
+.reelline__fill { position: absolute; inset: 0 auto 0 0; width: calc(var(--p, 0) * 100%); background: var(--ember); box-shadow: 0 0 .8rem var(--ember); }
+.reelline ol { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: .55rem; }
+.reelline button {
+  display: grid; justify-items: start; gap: .1rem;
+  width: 100%; min-height: 2.75rem; padding: .35rem .5rem .35rem 0;
+  border: 0; background: none; text-align: left; color: var(--dim);
+  transition: color .3s;
+}
+.reelline button::before { content: ""; width: 1px; height: .55rem; margin-top: -.9rem; margin-bottom: .2rem; background: var(--line-hi); }
+.reelline button:hover, .reelline button[aria-current="true"] { color: var(--bone); }
+.reelline button[aria-current="true"]::before { background: var(--ember); height: .9rem; }
+.reelline__tc { color: var(--ember); opacity: .85; }
+@media (max-width: 47.99em) {
+  .reelline__name { display: none; }
+  .reelline__tc { font-size: .6rem; }
+}
+.scrollhint { position: absolute; z-index: 7; right: calc(var(--pad-x) + env(safe-area-inset-right, 0px)); top: 50%; writing-mode: vertical-rl; color: var(--dim); transition: opacity .6s; }
+.scrollhint::after { content: ""; display: block; width: 1px; height: 3rem; margin: .75rem auto 0; background: linear-gradient(var(--ember), transparent); animation: hint 2.4s var(--ease) infinite; transform-origin: top; }
+@keyframes hint { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+@media (max-width: 47.99em) { .scrollhint { display: none; } }
+
+/* ---------------- Ambient background for the lower, dark sections ---------------- */
+.ambient { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 1s var(--ease); }
+.ambient.is-on { opacity: 1; }
+.after { position: relative; z-index: 1; }
+
+/* Section heading */
+.sec-head { display: grid; gap: .9rem; }
+.sec-head h2 { font-size: clamp(2.6rem, 7vw, 6rem); line-height: .9; }
+
+/* ---------------- Treatments reel ---------------- */
+.reel { position: relative; height: calc(8 * 72vh); }
+@media (max-width: 47.99em) { .reel { height: calc(8 * 62vh); } }
+.reel__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.reel__item { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .9s var(--ease), visibility 0s linear .9s; }
+.reel__item.is-on { opacity: 1; visibility: visible; transition-delay: 0s; }
+.reel__photo { position: absolute; inset: 0; overflow: hidden; }
+.reel__photo img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); filter: saturate(.95) contrast(1.05); }
+.reel__item.is-on .reel__photo img { animation: slowzoom 14s linear both; }
+@keyframes slowzoom { from { transform: scale(1.04); } to { transform: scale(1.2); } }
+.reel__photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(7 6 5 / .85), rgb(7 6 5 / .25) 60%, rgb(7 6 5 / .55)), linear-gradient(transparent 55%, rgb(7 6 5 / .9)); }
+.reel__roman {
+  position: absolute; right: calc(var(--pad-x) + env(safe-area-inset-right, 0px)); top: 14vh;
+  font-family: var(--serif); font-size: clamp(7rem, 24vw, 22rem); line-height: .8;
+  color: transparent; -webkit-text-stroke: 1px rgb(255 154 77 / .7);
+}
+.reel__copy { position: absolute; left: calc(var(--pad-x) + env(safe-area-inset-left, 0px)); right: calc(var(--pad-x) + env(safe-area-inset-right, 0px)); bottom: 22vh; display: grid; gap: 1rem; }
+.reel__name { font-size: clamp(3rem, 10vw, 9.5rem); line-height: .86; letter-spacing: -.02em; max-width: 12ch; }
+.reel__item.is-on .reel__name { animation: rise 1.1s var(--ease) both; }
+.reel__item.is-on .reel__roman { animation: rise 1.4s var(--ease) .1s both; }
+@keyframes rise { from { opacity: 0; transform: translateY(2.5rem); } }
+.reel__meta { display: flex; flex-wrap: wrap; gap: .5rem 1.75rem; color: var(--dim); }
+.reel__meta b { color: var(--bone); font-weight: 400; }
+.reel__meta .reel__price { color: var(--ember); }
+.reel__desc { max-width: 40ch; }
+.reel__head { position: absolute; z-index: 3; left: calc(var(--pad-x) + env(safe-area-inset-left, 0px)); top: calc(env(safe-area-inset-top, 0px) + 5.5rem); }
+.reel__ui { position: absolute; z-index: 3; left: calc(var(--pad-x) + env(safe-area-inset-left, 0px)); right: calc(var(--pad-x) + env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 3rem); display: grid; grid-template-columns: auto 1fr; gap: .9rem 2rem; align-items: center; }
+.reel__count { color: var(--bone); }
+.reel__count b { color: var(--ember); font-weight: 400; }
+.reel__bar { height: 1px; background: var(--line-hi); position: relative; }
+.reel__bar i { position: absolute; inset: 0 auto 0 0; width: calc(var(--rp, 0) * 100%); background: var(--ember); box-shadow: 0 0 .6rem var(--ember); }
+.reel__list { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }
+.reel__list button { min-height: 2.75rem; padding: .3rem 0; border: 0; background: none; color: var(--dim); text-align: left; transition: color .3s; }
+.reel__list button:hover, .reel__list button[aria-current="true"] { color: var(--ember); }
+@media (max-width: 47.99em) {
+  .reel__roman { top: auto; bottom: 46vh; font-size: 8rem; }
+  .reel__copy { bottom: 25vh; }
+  .reel__name { font-size: clamp(2.6rem, 13vw, 4rem); }
+  .reel__desc { display: none; }
+  .reel__list { display: none; }
+  .reel__ui { bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem); }
+}
+
+/* ---------------- Studio ---------------- */
+.studio { position: relative; height: 220vh; }
+.studio__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.studio__img { position: absolute; inset: 0; }
+.studio__img img { width: 100%; height: 100%; object-fit: cover; transform: scale(calc(1.02 + var(--sp, 0) * .2)); transform-origin: 70% 55%; }
+.studio__img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(7 6 5 / .92) 0%, rgb(7 6 5 / .6) 42%, rgb(7 6 5 / .1) 75%); }
+.studio__panel { position: absolute; left: calc(var(--pad-x) + env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); width: min(36rem, calc(100% - 2 * var(--pad-x))); display: grid; gap: 1.25rem; }
+.studio__panel h2 { font-size: clamp(2.6rem, 7vw, 6rem); line-height: .9; }
+.studio__stats { display: grid; grid-template-columns: repeat(2, 1fr); margin: .5rem 0 0; border-top: 1px solid var(--line-hi); }
+.studio__stats div { padding: .75rem .85rem; border-bottom: 1px solid var(--line); }
+.studio__stats div:nth-child(odd) { border-right: 1px solid var(--line); }
+.studio__stats dt { color: var(--dim); font-family: var(--mono); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; }
+.studio__stats dd { margin: .15rem 0 0; font-family: var(--serif); font-size: 1.9rem; line-height: 1.1; color: var(--ember); }
+.studio__team { display: grid; gap: .25rem; color: var(--dim); }
+.studio__team b { color: var(--bone); font-weight: 500; }
+.tag { display: inline-block; padding: .05rem .5rem; border: 1px solid var(--line-hi); font-family: var(--mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ember); vertical-align: .15em; }
+@media (max-width: 47.99em) {
+  .studio__img::after { background: linear-gradient(rgb(7 6 5 / .15), rgb(7 6 5 / .55) 40%, rgb(7 6 5 / .93) 62%); }
+  .studio__panel { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem); transform: none; }
+  .studio__stats dd { font-size: 1.5rem; }
+}
+
+/* ---------------- Booking ---------------- */
+.book { padding: clamp(6rem, 12vw, 10rem) var(--gutter-r) clamp(6rem, 12vw, 10rem) var(--gutter-l); }
+.book__wrap { max-width: 76rem; margin-inline: auto; padding-inline: clamp(0rem, 2vw, 1.5rem); display: grid; gap: 3rem; }
+@media (min-width: 64em) { .book__wrap { grid-template-columns: 5fr 7fr; gap: 5rem; align-items: start; } }
+.book__wrap > * { min-width: 0; }
+.book__intro p { color: var(--dim); }
+.book__notice { margin-top: 2rem; padding: 1rem 1.2rem; border-left: 1px solid var(--ember); background: rgb(18 14 12 / .8); font-size: .9rem; }
+.book__notice strong { color: var(--bone); font-weight: 600; }
+.form { padding: clamp(1.5rem, 3vw, 2.5rem); background: rgb(18 14 12 / .82); border: 1px solid var(--line); backdrop-filter: blur(6px); }
+.form__grid { display: grid; gap: 1.1rem 1.25rem; }
+@media (min-width: 40em) { .form__grid { grid-template-columns: 1fr 1fr; } .field--wide { grid-column: 1 / -1; } }
+.field { display: grid; gap: .35rem; }
+.field label { font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.field input:not([type="checkbox"]), .field select, .field textarea {
+  width: 100%; min-height: 2.875rem; padding: .65rem .8rem;
+  border: 1px solid var(--line-hi); border-radius: 0; background: var(--void); color: var(--bone);
+}
+.field textarea { resize: vertical; min-height: 6rem; }
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 2px solid var(--ember); outline-offset: 1px; border-color: var(--ember); }
+.field [aria-invalid="true"] { border-color: var(--error) !important; border-width: 2px !important; }
+.field--check { grid-template-columns: auto 1fr; align-items: start; gap: .75rem; }
+.field--check input { width: 1.15rem; height: 1.15rem; margin: .2rem 0 0; accent-color: var(--ember); }
+.field--check label { font-family: var(--sans); font-size: .95rem; letter-spacing: 0; text-transform: none; color: var(--bone); }
+.err { margin: 0; color: var(--error); font-size: .85rem; font-weight: 600; }
+.form__foot { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; margin-top: 1.75rem; }
+.form__foot p { color: var(--dim); font-size: .85rem; }
+.form__status { margin-top: 1rem; color: var(--error); font-size: .9rem; }
+.confirm { padding: clamp(1.5rem, 3vw, 2.5rem); background: rgb(18 14 12 / .9); border: 1px solid var(--ember); }
+.confirm:focus { outline: none; }
+.confirm h3 { font-size: clamp(2rem, 4vw, 3rem); margin: .75rem 0 1rem; }
+.confirm dl { margin: 1.5rem 0; border-top: 1px solid var(--line); }
+.confirm dl div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; padding-block: .6rem; border-bottom: 1px solid var(--line); }
+.confirm dt { font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); padding-top: .2rem; }
+.confirm dd { margin: 0; overflow-wrap: anywhere; }
+
+/* ---------------- Footer ---------------- */
+.foot { padding: 4rem var(--gutter-r) calc(2rem + env(safe-area-inset-bottom, 0px)) var(--gutter-l); border-top: 1px solid var(--line); overflow: hidden; }
+.foot__cols { max-width: 76rem; margin-inline: auto; padding-inline: clamp(0rem, 2vw, 1.5rem); display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.foot__cols p, .foot__cols li { color: var(--dim); font-size: .92rem; }
+.foot__cols h2 { margin-bottom: .75rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ember); }
+.foot__cols a { color: var(--bone); text-underline-offset: .22em; }
+.foot__giant {
+  margin: 3rem 0 1.5rem; text-align: center; white-space: nowrap;
+  font-family: var(--serif); font-size: clamp(4rem, 21vw, 21rem); line-height: .8; letter-spacing: -.02em;
+  color: transparent; -webkit-text-stroke: 1px rgb(255 154 77 / .75);
+  transition: -webkit-text-stroke-color .6s, text-shadow .6s;
+}
+.foot__giant:hover { -webkit-text-stroke-color: var(--flare); text-shadow: 0 0 3rem rgb(255 154 77 / .25); }
+.foot__end { max-width: 76rem; margin-inline: auto; padding-inline: clamp(0rem, 2vw, 1.5rem); display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; color: var(--dim); }
+
+/* Toast */
+.toast { position: fixed; left: 50%; bottom: calc(2rem + env(safe-area-inset-bottom, 0px)); z-index: 120; max-width: calc(100vw - 2rem); width: max-content; padding: .75rem 1.2rem; transform: translateX(-50%); background: var(--bone); color: var(--void); font-family: var(--mono); font-size: .75rem; letter-spacing: .04em; }
+
+/* Reduced motion: everything still, nothing hidden */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+  .scrollhint { display: none; }
+}
+</style>
+</head>
+<body class="is-loading">
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- Loader: real image count, then opens like a curtain -->
+<div class="loader" data-loader role="status" aria-live="polite">
+  <div class="loader__half loader__half--top"></div>
+  <div class="loader__half loader__half--bottom"></div>
+  <div class="loader__seam" aria-hidden="true"></div>
+  <div class="loader__read">
+    <p class="loader__brand">Obscura</p>
+    <p class="mono loader__count">Loading footage <b data-load-n>00</b>/<span data-load-total>10</span></p>
+  </div>
+</div>
+
+<!-- Fixed instrument HUD -->
+<header class="hud" data-hud>
+  <div class="hud__scrim" aria-hidden="true"></div>
+  <span class="hud__corner hud__corner--tl" aria-hidden="true"></span>
+  <span class="hud__corner hud__corner--tr" aria-hidden="true"></span>
+  <span class="hud__corner hud__corner--bl" aria-hidden="true"></span>
+  <span class="hud__corner hud__corner--br" aria-hidden="true"></span>
+  <div class="hud__bar">
+    <a class="hud__brand" href="#film" aria-label="Obscura Skin Lab, back to the start"><b>Obscura</b><span class="mono">Skin Lab · Brooklyn</span></a>
+    <p class="hud__read mono" aria-hidden="true" style="margin:0">
+      <span class="hud__rec">Rec</span>
+      <span data-tc>00:00:00:00</span>
+      <span class="hud__chap" data-hud-chap>// 01. The Reading</span>
+    </p>
+    <nav class="hud__nav" aria-label="Main">
+      <ul class="mono">
+        <li><a href="#film" data-nav>Film</a></li>
+        <li><a href="#treatments" data-nav>Treatments</a></li>
+        <li><a href="#studio" data-nav>Studio</a></li>
+      </ul>
+      <a class="btn btn--ember" href="#book">Book</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <!-- 1. THE FILM -->
+  <section class="film" id="film" aria-label="The Obscura film: seven chapters" data-film>
+    <div class="film__stage" data-stage>
+      <canvas class="film__gl" data-gl aria-hidden="true"></canvas>
+      <div class="film__fallback" data-fallback hidden aria-hidden="true"></div>
+      <canvas class="film__sparks" data-sparks aria-hidden="true"></canvas>
+      <div class="film__shade" aria-hidden="true"></div>
+      <div class="film__bar film__bar--top" aria-hidden="true"></div>
+      <div class="film__bar film__bar--bottom" aria-hidden="true"></div>
+      <div class="film__flash" aria-hidden="true"></div>
+
+      <article class="chapter" data-chapter="0">
+        <p class="chap" data-in="0">// 01. The Reading</p>
+        <h1 class="chapter__title" data-in=".02">Obscura <em>Skin Lab</em></h1>
+        <p class="chapter__text" data-in=".05">We read your skin before we touch it: fifteen minutes under a 5× magnifying lamp, every first visit.</p>
+        <p class="chapter__count" data-in=".08"><span class="chapter__num" data-count="15" data-dec="0">0</span><span class="chapter__unit mono">Minutes of consultation</span></p>
+        <dl class="chapter__data" data-in=".11">
+          <div><dt>Skin surface pH</dt><dd>4.7 avg.</dd></div>
+          <div><dt>Lamp</dt><dd>5× magnification</dd></div>
+          <div><dt>Consultation</dt><dd>15 min</dd></div>
+          <div><dt>Patch test</dt><dd>24 h</dd></div>
+        </dl>
+        <p class="chapter__demo mono" data-in=".14">Demonstration site · fictional studio · images generated with AI</p>
+      </article>
+
+      <article class="chapter" data-chapter="1">
+        <p class="chap" data-in="0">// 02. The Dose</p>
+        <h2 class="chapter__title" data-in=".02">The <em>Dose</em></h2>
+        <p class="chapter__text" data-in=".05">Actives are measured, layered and timed. Never more than your skin can use in one sitting.</p>
+        <p class="chapter__count" data-in=".08"><span class="chapter__num" data-count="28" data-dec="0">0</span><span class="chapter__unit mono">Days in a skin renewal cycle</span></p>
+        <dl class="chapter__data" data-in=".11">
+          <div><dt>Renewal cycle</dt><dd>~28 days</dd></div>
+          <div><dt>Serum layers</dt><dd>3</dd></div>
+          <div><dt>Dose per layer</dt><dd>0.5 ml</dd></div>
+          <div><dt>Rest between</dt><dd>60 s</dd></div>
+        </dl>
+      </article>
+
+      <article class="chapter" data-chapter="2">
+        <p class="chap" data-in="0">// 03. The Peel</p>
+        <h2 class="chapter__title" data-in=".02">The <em>Peel</em></h2>
+        <p class="chapter__text" data-in=".05">Acid strength and contact time are chosen for your skin, then written on your file so the next visit starts from facts.</p>
+        <p class="chapter__count" data-in=".08"><span class="chapter__num" data-count="40" data-dec="0" data-suffix="%">0</span><span class="chapter__unit mono">Maximum acid strength</span></p>
+        <dl class="chapter__data" data-in=".11">
+          <div><dt>Strength</dt><dd>20–40%</dd></div>
+          <div><dt>pH range</dt><dd>2.8–3.5</dd></div>
+          <div><dt>Contact time</dt><dd>3–5 min</dd></div>
+          <div><dt>Neutralised</dt><dd>Always</dd></div>
+        </dl>
+      </article>
+
+      <article class="chapter" data-chapter="3">
+        <p class="chap" data-in="0">// 04. The Room</p>
+        <h2 class="chapter__title" data-in=".02">The <em>Room</em></h2>
+        <p class="chapter__text" data-in=".05">Three rooms, one client in each. Nobody waits in a corridor in a robe.</p>
+        <p class="chapter__count" data-in=".08"><span class="chapter__num" data-count="3" data-dec="0">0</span><span class="chapter__unit mono">Treatment rooms</span></p>
+        <dl class="chapter__data" data-in=".11">
+          <div><dt>Rooms</dt><dd>3</dd></div>
+          <div><dt>Clients per room</dt><dd>1</dd></div>
+          <div><dt>Room temperature</dt><dd>22 °C</dd></div>
+          <div><dt>Signature facial</dt><dd>90 min</dd></div>
+        </dl>
+      </article>
+
+      <article class="chapter" data-chapter="4">
+        <p class="chap" data-in="0">// 05. The Light</p>
+        <h2 class="chapter__title" data-in=".02">The <em>Light</em></h2>
+        <p class="chapter__text" data-in=".05">Professional LED panels at three wavelengths, chosen for what your skin needs that day.</p>
+        <p class="chapter__count" data-in=".08"><span class="chapter__num" data-count="633" data-dec="0" data-suffix=" nm">0</span><span class="chapter__unit mono">Red light wavelength</span></p>
+        <dl class="chapter__data" data-in=".11">
+          <div><dt>Red</dt><dd>633 nm</dd></div>
+          <div><dt>Blue</dt><dd>415 nm</dd></div>
+          <div><dt>Near-infrared</dt><dd>830 nm</dd></div>
+          <div><dt>Session</dt><dd>20 min</dd></div>
+        </dl>
+      </article>
+
+      <article class="chapter" data-chapter="5">
+        <p class="chap" data-in="0">// 06. The Warmth</p>
+        <h2 class="chapter__title" data-in=".02">The <em>Warmth</em></h2>
+        <p class="chapter__text" data-in=".05">Warm towels, steam and basalt stones, each temperature-checked before it reaches your skin.</p>
+        <p class="chapter__count" data-in=".08"><span class="chapter__num" data-count="52" data-dec="0" data-suffix=" °C">0</span><span class="chapter__unit mono">Basalt stone temperature</span></p>
+        <dl class="chapter__data" data-in=".11">
+          <div><dt>Towels</dt><dd>40 °C</dd></div>
+          <div><dt>Stones</dt><dd>52 °C</dd></div>
+          <div><dt>Steam distance</dt><dd>30 cm</dd></div>
+          <div><dt>Microcurrent</dt><dd>200–500 µA</dd></div>
+        </dl>
+      </article>
+
+      <article class="chapter" data-chapter="6">
+        <p class="chap" data-in="0">// 07. The Exit</p>
+        <h2 class="chapter__title" data-in=".02">The <em>Exit</em></h2>
+        <p class="chapter__text" data-in=".05">You leave with a written plan, SPF on your face, and nothing in your bag you didn't ask for.</p>
+        <p class="chapter__count" data-in=".08"><span class="chapter__num" data-count="30" data-dec="0" data-prefix="SPF ">0</span><span class="chapter__unit mono">Minimum sun protection</span></p>
+        <dl class="chapter__data" data-in=".11">
+          <div><dt>Aftercare</dt><dd>1-page plan</dd></div>
+          <div><dt>SPF minimum</dt><dd>30</dd></div>
+          <div><dt>Follow-up</dt><dd>72 h</dd></div>
+          <div><dt>Next visit</dt><dd>4–6 weeks</dd></div>
+        </dl>
+      </article>
+
+      <nav class="reelline" aria-label="Film chapters">
+        <div class="reelline__track" aria-hidden="true"><div class="reelline__fill"></div></div>
+        <ol>
+          <li><button type="button" class="mono" data-goto="0"><span class="reelline__tc">00:00</span><span class="reelline__name">The Reading</span></button></li>
+          <li><button type="button" class="mono" data-goto="1"><span class="reelline__tc">00:15</span><span class="reelline__name">The Dose</span></button></li>
+          <li><button type="button" class="mono" data-goto="2"><span class="reelline__tc">00:30</span><span class="reelline__name">The Peel</span></button></li>
+          <li><button type="button" class="mono" data-goto="3"><span class="reelline__tc">00:40</span><span class="reelline__name">The Room</span></button></li>
+          <li><button type="button" class="mono" data-goto="4"><span class="reelline__tc">00:55</span><span class="reelline__name">The Light</span></button></li>
+          <li><button type="button" class="mono" data-goto="5"><span class="reelline__tc">01:15</span><span class="reelline__name">The Warmth</span></button></li>
+          <li><button type="button" class="mono" data-goto="6"><span class="reelline__tc">01:30</span><span class="reelline__name">The Exit</span></button></li>
+        </ol>
+      </nav>
+      <p class="scrollhint mono" aria-hidden="true">Scroll to play</p>
+    </div>
+  </section>
+
+  <canvas class="ambient" data-ambient aria-hidden="true"></canvas>
+
+  <div class="after">
+    <!-- 2. TREATMENTS REEL -->
+    <section class="reel" id="treatments" aria-labelledby="reel-title" data-reel>
+      <div class="reel__stage">
+        <div class="reel__head sec-head">
+          <p class="chap">// 08. Treatments</p>
+          <h2 id="reel-title" class="vh">Treatments</h2>
+        </div>
+        <div data-reel-items></div>
+        <div class="reel__ui">
+          <p class="reel__count mono" style="margin:0"><b data-reel-n>01</b> / <span data-reel-total>08</span></p>
+          <div class="reel__bar" aria-hidden="true"><i></i></div>
+          <ul class="reel__list mono" data-reel-list aria-label="Choose a treatment"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. STUDIO -->
+    <section class="studio" id="studio" aria-labelledby="studio-title" data-studio>
+      <div class="studio__stage">
+        <figure class="studio__img" style="margin:0"><img data-src="assets/footage/09.jpg" alt="The studio at night: a shelf of amber bottles and one warm lamp in a dark room" width="1376" height="768" loading="lazy" decoding="async"></figure>
+        <div class="studio__panel">
+          <p class="chap">// 09. The Studio</p>
+          <h2 id="studio-title">A darkroom for <em style="color:var(--ember)">skin</em></h2>
+          <p>A second-floor studio in Williamsburg, kept dim on purpose. Low light lets your eyes rest and lets us see texture, not glare.</p>
+          <dl class="studio__stats">
+            <div><dt>Estheticians</dt><dd>4</dd></div>
+            <div><dt>Rooms</dt><dd>3</dd></div>
+            <div><dt>Open</dt><dd>6 days</dd></div>
+            <div><dt>Since</dt><dd>2021</dd></div>
+          </dl>
+          <p class="studio__team"><span><b>Iris Calder</b>, founder and lead esthetician <span class="tag">Fictional</span></span><span>All people, numbers and the address are invented for this demonstration.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. BOOKING -->
+    <section class="book" id="book" aria-labelledby="book-title">
+      <div class="book__wrap">
+        <div class="book__intro sec-head">
+          <p class="chap">// 10. Book a session</p>
+          <h2 id="book-title">Book a session</h2>
+          <p>Pick a treatment and a time. We hold the slot and confirm by email within one working day.</p>
+          <p class="book__notice"><strong>This is a demonstration.</strong> The form checks your details and shows a confirmation on this page, but nothing is sent, stored or booked.</p>
+        </div>
+
+        <form class="form bracket" data-form novalidate aria-labelledby="book-title">
+          <div class="form__grid">
+            <div class="field"><label for="f-name">Full name</label><input id="f-name" name="name" type="text" autocomplete="name" required><p class="err" id="f-name-err" hidden></p></div>
+            <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required><p class="err" id="f-email-err" hidden></p></div>
+            <div class="field"><label for="f-phone">Phone (optional)</label><input id="f-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel"><p class="err" id="f-phone-err" hidden></p></div>
+            <div class="field"><label for="f-service">Treatment</label><select id="f-service" name="service" required data-service-select><option value="">Choose a treatment</option></select><p class="err" id="f-service-err" hidden></p></div>
+            <div class="field"><label for="f-date">Date</label><input id="f-date" name="date" type="date" required><p class="err" id="f-date-err" hidden></p></div>
+            <div class="field"><label for="f-time">Time</label><select id="f-time" name="time" required>
+              <option value="">Choose a time</option>
+              <option>10:00 am</option><option>11:30 am</option><option>1:00 pm</option><option>2:30 pm</option><option>4:00 pm</option><option>5:30 pm</option>
+            </select><p class="err" id="f-time-err" hidden></p></div>
+            <div class="field field--wide"><label for="f-notes">Anything we should know? (optional)</label><textarea id="f-notes" name="notes" rows="3" maxlength="500"></textarea></div>
+            <div class="field field--wide field--check"><input id="f-ok" name="ok" type="checkbox" required><label for="f-ok">I understand this is a demo and no appointment will be made.</label></div>
+            <p class="err field--wide" id="f-ok-err" hidden></p>
+          </div>
+          <div class="form__foot">
+            <p>Open Tuesday to Sunday. Closed Mondays.</p>
+            <button type="submit" class="btn btn--ember">Request session</button>
+          </div>
+          <p class="form__status" data-form-status role="alert"></p>
+        </form>
+
+        <div class="confirm bracket" data-confirm hidden tabindex="-1">
+          <p class="chap">// Request received · demo</p>
+          <h3>See you in the dark, <span data-confirm-name></span>.</h3>
+          <p>This is what a real request would send to the studio. Because this is a demonstration, nothing has been sent or booked.</p>
+          <dl data-confirm-list></dl>
+          <button type="button" class="btn" data-confirm-again>Make another request</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot after" aria-labelledby="foot-title">
+  <div class="foot__cols">
+    <div>
+      <h2 id="foot-title">Studio</h2>
+      <p>88 Demonstration Street, 2nd floor<br>Brooklyn, NY 11211 <span class="tag">Fictional</span></p>
+    </div>
+    <div>
+      <h2>Contact</h2>
+      <p>(718) 555-0143 — a number reserved for fiction<br>hello@obscura.example</p>
+    </div>
+    <div>
+      <h2>Hours</h2>
+      <ul><li>Tue–Fri 10:00 am – 7:00 pm</li><li>Sat–Sun 10:00 am – 5:00 pm</li><li>Mon closed</li></ul>
+    </div>
+    <div>
+      <h2>Notes</h2>
+      <p>Demonstration website for a fictional business. Prices are examples. Images were generated with AI in Figma and do not show a real studio or results.</p>
+    </div>
+  </div>
+  <p class="foot__giant" aria-hidden="true">Obscura</p>
+  <div class="foot__end mono">
+    <span>© <span data-year>2026</span> Obscura Skin Lab (fictional)</span>
+    <a href="#film" style="color:inherit">Back to the first frame</a>
+  </div>
+</footer>
+
+<div class="toast" role="status" aria-live="polite" data-toast hidden></div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const reduceQ = matchMedia("(prefers-reduced-motion: reduce)");
+let reduce = reduceQ.matches;
+reduceQ.addEventListener("change", (e) => { reduce = e.matches; });
+const finePointer = matchMedia("(pointer: fine)").matches;
+
+/* ------------------------------------------------------------------
+   DATA
+------------------------------------------------------------------ */
+const FOOTAGE = Array.from({ length: 10 }, (_, i) => `assets/footage/${String(i + 1).padStart(2, "0")}.jpg`);
+// Film chapters → footage index (story: bottle, drop, lab, room, light, steam, door)
+const FILM = [0, 1, 2, 3, 4, 5, 9];
+const CHAPTER_NAMES = ["The Reading", "The Dose", "The Peel", "The Room", "The Light", "The Warmth", "The Exit"];
+const SERVICES = [
+  { name: "Signature Facial", img: 3, min: 90, price: 230, spec: "Reading · dose · massage · LED · exit plan", desc: "The full film: consultation, layered actives, a long sculpting massage, LED and a written plan to take home." },
+  { name: "Peel Protocol", img: 2, min: 45, price: 165, spec: "20–40% · pH 2.8–3.5", desc: "A professional peel matched to your skin's tolerance, with a patch test on your first visit." },
+  { name: "Light Session", img: 4, min: 20, price: 85, spec: "633 / 415 / 830 nm", desc: "Twenty quiet minutes under a professional LED panel, on its own or added to any facial." },
+  { name: "Serum Infusion", img: 1, min: 60, price: 180, spec: "3 layers · 0.5 ml each", desc: "Three measured layers of actives, pressed in with cool tools and a slow massage." },
+  { name: "Barrier Repair", img: 6, min: 60, price: 175, spec: "For tight, reactive skin", desc: "A calming, fragrance-free treatment built around ceramides and a rich occlusive mask." },
+  { name: "Steam & Extraction", img: 5, min: 60, price: 160, spec: "Towels 40 °C · steam 30 cm", desc: "Gentle steam, careful extractions and a soothing mask. No squeezing marathons." },
+  { name: "Basalt Body Ritual", img: 7, min: 75, price: 210, spec: "Stones 52 °C", desc: "Warm basalt along the back and shoulders, full-body exfoliation and a rich body oil." },
+  { name: "First Reading", img: 0, min: 30, price: 60, spec: "Consultation + skin map", desc: "A consultation and written skin map. The fee is credited to your first treatment." },
+];
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+const RUNTIME = 90 * 60; // page runs as long as the Signature Facial
+
+/* ------------------------------------------------------------------
+   TOAST + YEAR
+------------------------------------------------------------------ */
+const toastEl = $("[data-toast]");
+let toastT;
+const toast = (m) => { toastEl.textContent = m; toastEl.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (toastEl.hidden = true), 4200); };
+$$("[data-year]").forEach((el) => (el.textContent = new Date().getFullYear()));
+
+/* ------------------------------------------------------------------
+   LOADER — real count of footage, then curtain
+------------------------------------------------------------------ */
+const loader = $("[data-loader]");
+const loadN = $("[data-load-n]");
+$("[data-load-total]").textContent = String(FOOTAGE.length).padStart(2, "0");
+const images = new Array(FOOTAGE.length);
+let loaded = 0, opened = false;
+function onOne() {
+  loaded += 1;
+  loadN.textContent = String(loaded).padStart(2, "0");
+  loader.style.setProperty("--load", loaded / FOOTAGE.length);
+  if (loaded === FOOTAGE.length) setTimeout(openCurtain, reduce ? 0 : 450);
+}
+FOOTAGE.forEach((src, i) => {
+  const img = new Image();
+  img.decoding = "async";
+  img.onload = () => { images[i] = img; onOne(); };
+  img.onerror = () => { images[i] = null; onOne(); };
+  img.src = src;
+});
+setTimeout(openCurtain, 9000); // never trap the visitor behind the loader
+function openCurtain() {
+  if (opened) return;
+  opened = true;
+  loader.classList.add("is-open");
+  document.body.classList.remove("is-loading");
+  setTimeout(() => { loader.hidden = true; }, reduce ? 0 : 1400);
+  startFilm();
+  // lazy images inside the page
+  $$("img[data-src]").forEach((im) => { im.src = im.dataset.src; });
+  buildReel();
+}
+
+/* ------------------------------------------------------------------
+   SMOOTH SCROLL — wheel with inertia (desktop only, off for reduced motion)
+------------------------------------------------------------------ */
+const scroller = { target: scrollY, current: scrollY, running: false, own: false, last: 0 };
+const maxScroll = () => document.documentElement.scrollHeight - innerHeight;
+function scrollStep(now) {
+  // time-based easing: same feel at 30, 60 or 120 fps
+  const dt = Math.min(100, scroller.last ? now - scroller.last : 16.7);
+  scroller.last = now;
+  scroller.current = lerp(scroller.current, scroller.target, 1 - Math.pow(1 - 0.085, dt / 16.7));
+  if (Math.abs(scroller.target - scroller.current) < 0.5) scroller.current = scroller.target;
+  scroller.own = true;
+  window.scrollTo(0, scroller.current);
+  if (scroller.current !== scroller.target) requestAnimationFrame(scrollStep);
+  else { scroller.running = false; scroller.last = 0; }
+}
+function scrollToY(y, instant) {
+  y = clamp(y, 0, maxScroll());
+  if (instant || reduce) { scroller.target = scroller.current = y; window.scrollTo(0, y); return; }
+  scroller.target = y;
+  if (!scroller.running) { scroller.running = true; scroller.current = scrollY; requestAnimationFrame(scrollStep); }
+}
+if (finePointer) {
+  addEventListener("wheel", (e) => {
+    if (reduce || e.ctrlKey || document.body.classList.contains("is-loading")) return;
+    if (e.target.closest("textarea, select")) return;
+    e.preventDefault();
+    const unit = e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? innerHeight : 1;
+    scrollToY((scroller.running ? scroller.target : scrollY) + e.deltaY * unit);
+  }, { passive: false });
+}
+addEventListener("scroll", () => {
+  if (scroller.own) { scroller.own = false; return; }
+  if (!scroller.running) scroller.target = scroller.current = scrollY;
+}, { passive: true });
+// In-page links use the same glide
+document.addEventListener("click", (e) => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const id = a.getAttribute("href").slice(1);
+  const el = id && document.getElementById(id);
+  if (!el) return;
+  e.preventDefault();
+  scrollToY(el.getBoundingClientRect().top + scrollY);
+  if (id === "main" || id === "book") el.focus?.({ preventScroll: true });
+  history.replaceState(null, "", "#" + id);
+});
+
+/* ------------------------------------------------------------------
+   FILM — WebGL burn transitions, slow camera, 2.5D, motion blur
+------------------------------------------------------------------ */
+const film = $("[data-film]");
+const stage = $("[data-stage]");
+const glCanvas = $("[data-gl]");
+const chapters = $$("[data-chapter]");
+const N = FILM.length;
+let gl = null, prog = null, uni = {}, textures = [], filmVisible = true;
+
+const VS = `attribute vec2 p; varying vec2 vUv; void main(){ vUv = p * .5 + .5; gl_Position = vec4(p, 0., 1.); }`;
+const FS = `
+precision highp float;
+varying vec2 vUv;
+uniform sampler2D uA, uB;
+uniform vec2 uRes, uSizeA, uSizeB, uPanA, uPanB, uMouse;
+uniform float uZoomA, uZoomB, uMix, uTime, uBlur, uSeed, uGrain;
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3. - 2. * f);
+  return mix(mix(hash(i), hash(i + vec2(1., 0.)), u.x), mix(hash(i + vec2(0., 1.)), hash(i + vec2(1., 1.)), u.x), u.y); }
+float fbm(vec2 p){ float v = 0., a = .5; for (int i = 0; i < 5; i++){ v += a * noise(p); p *= 2.03; a *= .5; } return v; }
+vec2 cover(vec2 uv, vec2 size, float zoom, vec2 pan){
+  float ra = uRes.x / uRes.y, ri = size.x / size.y;
+  vec2 s = ra > ri ? vec2(1., ri / ra) : vec2(ra / ri, 1.);
+  vec2 c = uv - .5;
+  float depth = 1. - smoothstep(0., .8, length(c));           // centre is "closer"
+  c -= uMouse * (.006 + .02 * depth);                          // 2.5D parallax
+  return c * s / zoom + .5 + pan;
+}
+vec3 shot(sampler2D t, vec2 size, float zoom, vec2 pan){
+  vec2 uv = cover(vUv, size, zoom, pan);
+  if (uBlur < .02) return texture2D(t, clamp(uv, .001, .999)).rgb;
+  vec3 col = vec3(0.);
+  for (int i = 0; i < 9; i++){                                 // motion blur on fast scroll
+    float o = (float(i) / 8. - .5) * uBlur * .07;
+    col += texture2D(t, clamp(uv + vec2(0., o), .001, .999)).rgb;
+  }
+  return col / 9.;
+}
+void main(){
+  vec3 col = shot(uA, uSizeA, uZoomA, uPanA);
+  if (uMix > .0005) {
+    vec3 b = shot(uB, uSizeB, uZoomB, uPanB);
+    vec2 q = vUv * vec2(uRes.x / uRes.y, 1.);
+    float n = fbm(q * 3.4 + uSeed + vec2(0., uTime * .02));
+    float th = uMix * 1.3 - .15;
+    float m = smoothstep(th + .012, th - .012, n);              // 1 = burned through → next shot
+    float d = abs(n - th);
+    col = mix(col, b, m);
+    col *= 1. - .85 * (1. - smoothstep(0., .07, d)) * (1. - m);  // charred rim
+    float edge = 1. - smoothstep(0., .022, d);
+    col += vec3(1., .46, .12) * pow(edge, 2.) * 1.6 + vec3(1., .86, .6) * pow(edge, 10.) * 1.6;  // incandescent edge
+    col += vec3(1., .74, .46) * pow(sin(3.14159 * uMix), 8.) * .18;                             // flash at the peak
+  }
+  float v = smoothstep(1.2, .3, length((vUv - .5) * vec2(uRes.x / uRes.y, 1.) * .85));
+  col *= mix(.28, 1., v);
+  col = pow(max(col, 0.), vec3(1.06)) * vec3(1.05, .97, .88);
+  col += (hash(vUv * uRes + fract(uTime) * 91.7) - .5) * .05 * uGrain;
+  gl_FragColor = vec4(col, 1.);
+}`;
+
+function initGL() {
+  try {
+    gl = glCanvas.getContext("webgl", { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: false });
+  } catch (_) { gl = null; }
+  if (!gl) return false;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  } catch (err) { console.warn("Film shader unavailable, using image fallback.", err); gl = null; return false; }
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "p");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  ["uA", "uB", "uRes", "uSizeA", "uSizeB", "uPanA", "uPanB", "uMouse", "uZoomA", "uZoomB", "uMix", "uTime", "uBlur", "uSeed", "uGrain"].forEach((k) => (uni[k] = gl.getUniformLocation(prog, k)));
+  gl.uniform1i(uni.uA, 0);
+  gl.uniform1i(uni.uB, 1);
+  textures = images.map((img) => {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    if (img) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+    else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([18, 14, 12]));
+    return { tex: t, w: img ? img.naturalWidth : 16, h: img ? img.naturalHeight : 9 };
+  });
+  return true;
+}
+
+function sizeGL() {
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  const w = Math.round(glCanvas.clientWidth * dpr), h = Math.round(glCanvas.clientHeight * dpr);
+  if (glCanvas.width !== w || glCanvas.height !== h) { glCanvas.width = w; glCanvas.height = h; }
+  if (gl) gl.viewport(0, 0, w, h);
+}
+
+// Fallback (no WebGL): two stacked <img>, crossfaded
+const fallback = $("[data-fallback]");
+let fbImgs = [];
+function initFallback() {
+  fallback.hidden = false;
+  glCanvas.hidden = true;
+  fbImgs = FILM.map((fi) => { const im = document.createElement("img"); im.alt = ""; im.src = FOOTAGE[fi]; fallback.appendChild(im); return im; });
+}
+
+// Camera direction per chapter (slow push + drift)
+const PAN = [[.02, -.01], [-.015, .012], [.018, .008], [-.02, -.006], [.01, .014], [-.012, -.01], [0, .012]];
+const state = { p: 0, cf: 0, mix: 0, mouse: [0, 0], mouseT: [0, 0], blur: 0, lastY: scrollY, lastT: performance.now(), seed: 0, t0: performance.now() };
+
+function filmProgress() {
+  const r = film.getBoundingClientRect();
+  const span = r.height - innerHeight;
+  return span > 0 ? clamp(-r.top / span) : 0;
+}
+
+const TRANS = 0.78; // last 22% of each chapter burns into the next
+function frame(now) {
+  requestAnimationFrame(frame);
+  const p = filmProgress();
+  state.p = p;
+  const cf = Math.min(p * N, N - 0.0001);
+  state.cf = cf;
+  const idx = Math.floor(cf), local = cf - idx;
+  const next = Math.min(idx + 1, N - 1);
+  const mix = idx < N - 1 ? smooth(TRANS, 1, local) : 0;
+  state.mix = mix;
+
+  // scroll velocity → motion blur
+  const dt = Math.max(16, now - state.lastT);
+  const v = Math.abs(scrollY - state.lastY) / dt;
+  state.lastY = scrollY; state.lastT = now;
+  state.blur = lerp(state.blur, reduce ? 0 : clamp(v / 3.2), 0.12);
+  state.mouse[0] = lerp(state.mouse[0], state.mouseT[0], 0.05);
+  state.mouse[1] = lerp(state.mouse[1], state.mouseT[1], 0.05);
+
+  updateText(cf);
+  updateHUD();
+  stage.style.setProperty("--burn", Math.sin(Math.PI * mix).toFixed(3));
+  stage.style.setProperty("--flash", Math.pow(Math.sin(Math.PI * mix), 8).toFixed(3));
+  sparks.burn = Math.sin(Math.PI * mix);
+
+  if (!filmVisible) return;
+  const portrait = innerHeight > innerWidth;
+  const push = portrait ? 0.045 : 0.12;
+  const base = portrait ? 1.0 : 1.03;
+  const tsec = (now - state.t0) / 1000;
+  const drift = reduce ? 0 : Math.sin(tsec * 0.12) * 0.004;
+  const camA = { z: base + push * local, pan: [PAN[idx][0] * local + drift, PAN[idx][1] * local] };
+  const camB = { z: base, pan: [0, 0] };
+
+  if (gl) {
+    sizeGL();
+    const A = textures[FILM[idx]], B = textures[FILM[next]];
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, A.tex);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, B.tex);
+    gl.uniform2f(uni.uRes, glCanvas.width, glCanvas.height);
+    gl.uniform2f(uni.uSizeA, A.w, A.h);
+    gl.uniform2f(uni.uSizeB, B.w, B.h);
+    gl.uniform1f(uni.uZoomA, camA.z);
+    gl.uniform1f(uni.uZoomB, camB.z);
+    gl.uniform2f(uni.uPanA, camA.pan[0], camA.pan[1]);
+    gl.uniform2f(uni.uPanB, camB.pan[0], camB.pan[1]);
+    gl.uniform2f(uni.uMouse, state.mouse[0], state.mouse[1]);
+    gl.uniform1f(uni.uMix, mix);
+    gl.uniform1f(uni.uTime, reduce ? 0 : tsec);
+    gl.uniform1f(uni.uBlur, state.blur);
+    gl.uniform1f(uni.uSeed, idx * 7.13);
+    gl.uniform1f(uni.uGrain, reduce ? 0 : 1);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  } else if (fbImgs.length) {
+    fbImgs.forEach((im, i) => {
+      const o = i === idx ? 1 - mix : i === next ? mix : 0;
+      im.style.opacity = o;
+      if (o > 0) im.style.transform = `scale(${i === idx ? camA.z : camB.z})`;
+    });
+  }
+}
+
+/* Text tied to scroll (forwards and backwards) */
+const chapterEls = chapters.map((el) => ({
+  el,
+  parts: $$("[data-in]", el).map((p) => ({ p, d: parseFloat(p.dataset.in) })),
+  num: $("[data-count]", el),
+}));
+function fmt(numEl, v) {
+  const dec = +numEl.dataset.dec || 0;
+  return (numEl.dataset.prefix || "") + v.toFixed(dec) + (numEl.dataset.suffix || "");
+}
+function updateText(cf) {
+  chapterEls.forEach(({ el, parts, num }, c) => {
+    const t = cf - c; // 0..1 while this chapter is on screen
+    let live = false;
+    parts.forEach(({ p, d }) => {
+      let inn = c === 0 ? 1 : smooth(0.03 + d, 0.17 + d, t);
+      let out = c === N - 1 ? 1 : 1 - smooth(0.62 + d * 0.6, 0.76 + d * 0.6, t);
+      if (t < -0.05 || t > 1.05) { inn = c === 0 && t < 0 ? 1 : 0; }
+      const a = clamp(inn * out);
+      if (a > 0.02) live = true;
+      p.style.opacity = a.toFixed(3);
+      const y = (1 - inn) * 46 - (1 - out) * 46;
+      p.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+      p.style.filter = a < 0.98 && !reduce ? `blur(${((1 - a) * 6).toFixed(1)}px)` : "none";
+    });
+    el.classList.toggle("is-live", live);
+    el.toggleAttribute("aria-hidden", !live);
+    if (num) {
+      const k = c === 0 ? 1 : smooth(0.06, 0.42, t);
+      num.textContent = fmt(num, +num.dataset.count * k);
+    }
+  });
+}
+
+/* HUD: timecode, current chapter, timeline */
+const tcEl = $("[data-tc]");
+const hudChap = $("[data-hud-chap]");
+const hud = $("[data-hud]");
+const fill = $(".reelline");
+const gotoBtns = $$("[data-goto]");
+const navLinks = $$("[data-nav]");
+const hint = $(".scrollhint");
+const pad2 = (n) => String(Math.floor(n)).padStart(2, "0");
+function updateHUD() {
+  const max = maxScroll();
+  const g = max > 0 ? clamp(scrollY / max) : 0;
+  const s = g * RUNTIME;
+  tcEl.textContent = `${pad2(s / 3600)}:${pad2((s % 3600) / 60)}:${pad2(s % 60)}:${pad2((s % 1) * 24)}`;
+  const idx = Math.min(N - 1, Math.floor(state.cf + 0.0001));
+  fill.style.setProperty("--p", state.p.toFixed(4));
+  gotoBtns.forEach((b, i) => b.setAttribute("aria-current", String(i === idx)));
+  const filmR = film.getBoundingClientRect();
+  let label = `// ${pad2(idx + 1)}. ${CHAPTER_NAMES[idx]}`;
+  let section = "film";
+  if (filmR.bottom < innerHeight * 0.5) {
+    const secs = [["treatments", "// 08. Treatments"], ["studio", "// 09. The Studio"], ["book", "// 10. Book a session"]];
+    secs.forEach(([id, l]) => { const r = document.getElementById(id).getBoundingClientRect(); if (r.top < innerHeight * 0.5) { label = l; section = id; } });
+  }
+  hudChap.textContent = label;
+  navLinks.forEach((a) => a.setAttribute("aria-current", String(a.getAttribute("href") === "#" + section)));
+  hud.classList.toggle("is-scrim", filmR.bottom < innerHeight * 0.6);
+  if (hint) hint.style.opacity = state.p > 0.02 ? 0 : 1;
+}
+gotoBtns.forEach((b) => b.addEventListener("click", () => {
+  const i = +b.dataset.goto;
+  const top = film.getBoundingClientRect().top + scrollY;
+  const span = film.offsetHeight - innerHeight;
+  scrollToY(top + span * ((i + 0.3) / N));
+}));
+
+addEventListener("pointermove", (e) => {
+  if (e.pointerType !== "mouse" || reduce) return;
+  state.mouseT[0] = (e.clientX / innerWidth - 0.5) * 2;
+  state.mouseT[1] = -(e.clientY / innerHeight - 0.5) * 2;
+}, { passive: true });
+
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(([e]) => { filmVisible = e.isIntersecting; ambient.on = !e.isIntersecting; $("[data-ambient]").classList.toggle("is-on", !e.isIntersecting); }, { threshold: 0 }).observe(stage);
+}
+
+let filmStarted = false;
+function startFilm() {
+  if (filmStarted) return;
+  filmStarted = true;
+  if (!initGL()) initFallback();
+  requestAnimationFrame(frame);
+  requestAnimationFrame(sparkLoop);
+  requestAnimationFrame(ambientLoop);
+}
+
+/* ------------------------------------------------------------------
+   SPARKS — embers over the film, more during a burn
+------------------------------------------------------------------ */
+const sCanvas = $("[data-sparks]");
+const sctx = sCanvas.getContext("2d");
+const sparks = { list: [], burn: 0 };
+// one pre-rendered ember sprite, drawn many times (cheap)
+const ember = document.createElement("canvas");
+ember.width = ember.height = 64;
+{ const c = ember.getContext("2d"); const g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, "rgba(255,220,170,1)"); g.addColorStop(.3, "rgba(255,140,60,.55)"); g.addColorStop(1, "rgba(255,110,40,0)");
+  c.fillStyle = g; c.fillRect(0, 0, 64, 64); }
+function sizeSparks() {
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  sCanvas.width = Math.round(sCanvas.clientWidth * dpr);
+  sCanvas.height = Math.round(sCanvas.clientHeight * dpr);
+  sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+function spawn(burst) {
+  const w = sCanvas.clientWidth, h = sCanvas.clientHeight;
+  sparks.list.push({
+    x: Math.random() * w, y: burst ? Math.random() * h : h + 10,
+    vx: (Math.random() - 0.5) * (burst ? 1.6 : 0.35), vy: -(0.25 + Math.random() * (burst ? 2.4 : 0.9)),
+    r: 0.5 + Math.random() * (burst ? 2.2 : 1.5), life: 0, max: 120 + Math.random() * 220, f: Math.random() * 6.28,
+  });
+}
+function sparkLoop() {
+  requestAnimationFrame(sparkLoop);
+  if (!filmVisible || reduce) { if (sparks.list.length) { sparks.list.length = 0; sctx.clearRect(0, 0, sCanvas.width, sCanvas.height); } return; }
+  if (sCanvas.width !== Math.round(sCanvas.clientWidth * Math.min(devicePixelRatio || 1, 1.5))) sizeSparks();
+  const base = innerWidth < 768 ? 0.35 : 0.7;
+  if (Math.random() < base) spawn(false);
+  for (let i = 0; i < sparks.burn * 6; i++) spawn(true);
+  sctx.clearRect(0, 0, sCanvas.clientWidth, sCanvas.clientHeight);
+  sctx.globalCompositeOperation = "lighter";
+  sparks.list = sparks.list.filter((s) => {
+    s.life += 1; s.x += s.vx + Math.sin((s.life + s.f * 40) * 0.03) * 0.25; s.y += s.vy; s.vy *= 0.997;
+    const k = 1 - s.life / s.max;
+    if (k <= 0 || s.y < -20) return false;
+    const flick = 0.6 + 0.4 * Math.sin(s.life * 0.3 + s.f);
+    const size = s.r * 8;
+    sctx.globalAlpha = 0.9 * k * flick;
+    sctx.drawImage(ember, s.x - size / 2, s.y - size / 2, size, size);
+    return true;
+  });
+  if (sparks.list.length > 420) sparks.list.splice(0, sparks.list.length - 420);
+  sctx.globalAlpha = 1;
+  sctx.globalCompositeOperation = "source-over";
+}
+
+/* ------------------------------------------------------------------
+   AMBIENT — breathing glow + drifting dust behind the dark sections
+------------------------------------------------------------------ */
+const aCanvas = $("[data-ambient]");
+const actx = aCanvas.getContext("2d");
+const ambient = { on: false, dust: [] };
+function sizeAmbient() {
+  const dpr = Math.min(devicePixelRatio || 1, 1.25);
+  aCanvas.width = Math.round(innerWidth * dpr); aCanvas.height = Math.round(innerHeight * dpr);
+  actx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const n = innerWidth < 768 ? 45 : 90;
+  ambient.dust = Array.from({ length: n }, () => ({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: 0.4 + Math.random() * 1.4, vx: (Math.random() - 0.5) * 0.12, vy: -0.05 - Math.random() * 0.18, f: Math.random() * 6.28 }));
+}
+sizeAmbient();
+function drawAmbient(t) {
+  const w = innerWidth, h = innerHeight;
+  actx.fillStyle = "#070605"; actx.fillRect(0, 0, w, h);
+  const breathe = 0.5 + 0.5 * Math.sin(t * 0.45);
+  const glows = [
+    [w * 0.78, h * 0.25, Math.max(w, h) * (0.55 + 0.06 * breathe), `rgba(255,140,60,${0.10 + 0.06 * breathe})`],
+    [w * 0.15, h * 0.85, Math.max(w, h) * (0.45 + 0.05 * (1 - breathe)), `rgba(150,60,30,${0.10 + 0.05 * (1 - breathe)})`],
+  ];
+  glows.forEach(([x, y, r, c]) => { const g = actx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, c); g.addColorStop(1, "rgba(0,0,0,0)"); actx.fillStyle = g; actx.fillRect(0, 0, w, h); });
+  actx.globalCompositeOperation = "lighter";
+  ambient.dust.forEach((d) => {
+    if (!reduce) { d.x += d.vx; d.y += d.vy; if (d.y < -5) { d.y = h + 5; d.x = Math.random() * w; } if (d.x < -5) d.x = w + 5; if (d.x > w + 5) d.x = -5; }
+    const a = 0.25 + 0.35 * (0.5 + 0.5 * Math.sin(t * 1.2 + d.f));
+    actx.fillStyle = `rgba(255,190,130,${a})`;
+    actx.beginPath(); actx.arc(d.x, d.y, d.r, 0, 6.283); actx.fill();
+  });
+  actx.globalCompositeOperation = "source-over";
+}
+let ambientDrawnStill = false;
+function ambientLoop(now) {
+  requestAnimationFrame(ambientLoop);
+  if (!ambient.on) return;
+  if (reduce) { if (!ambientDrawnStill) { drawAmbient(0); ambientDrawnStill = true; } return; }
+  ambientDrawnStill = false;
+  drawAmbient(now / 1000);
+}
+addEventListener("resize", () => { sizeAmbient(); sizeSparks(); ambientDrawnStill = false; });
+sizeSparks();
+
+/* ------------------------------------------------------------------
+   TREATMENTS REEL — one at a time, scroll-driven, clickable list
+------------------------------------------------------------------ */
+const reel = $("[data-reel]");
+const reelItems = $("[data-reel-items]");
+const reelList = $("[data-reel-list]");
+const reelN = $("[data-reel-n]");
+$("[data-reel-total]").textContent = String(SERVICES.length).padStart(2, "0");
+const select = $("[data-service-select]");
+SERVICES.forEach((s) => { const o = document.createElement("option"); o.textContent = `${s.name} — ${s.min} min — $${s.price}`; o.value = s.name; select.appendChild(o); });
+let reelBuilt = false, reelIdx = -1;
+function buildReel() {
+  if (reelBuilt) return;
+  reelBuilt = true;
+  SERVICES.forEach((s, i) => {
+    const art = document.createElement("article");
+    art.className = "reel__item";
+    art.setAttribute("aria-hidden", "true");
+    art.innerHTML = `
+      <figure class="reel__photo" style="margin:0"><img src="${FOOTAGE[s.img]}" alt="" width="1376" height="768" decoding="async"></figure>
+      <p class="reel__roman" aria-hidden="true">${ROMAN[i]}</p>
+      <div class="reel__copy">
+        <h3 class="reel__name">${s.name}</h3>
+        <p class="reel__meta mono"><span>Running time <b>${s.min} min</b></span><span>Spec <b>${s.spec}</b></span><span class="reel__price">$${s.price} · example price</span></p>
+        <p class="reel__desc">${s.desc}</p>
+        <p><a class="btn btn--ember" href="#book" data-pick="${s.name}">Book ${s.name}</a></p>
+      </div>`;
+    reelItems.appendChild(art);
+    const li = document.createElement("li");
+    li.innerHTML = `<button type="button" data-reel-go="${i}">${ROMAN[i]}. ${s.name}</button>`;
+    reelList.appendChild(li);
+  });
+  reelList.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-reel-go]");
+    if (!b) return;
+    const i = +b.dataset.reelGo;
+    const top = reel.getBoundingClientRect().top + scrollY;
+    const span = reel.offsetHeight - innerHeight;
+    scrollToY(top + span * ((i + 0.5) / SERVICES.length));
+  });
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-pick]");
+    if (!a) return;
+    select.value = a.dataset.pick;
+    setErr(select, "");
+    toast(`${a.dataset.pick} selected. Pick a date and time.`);
+  });
+  updateReel();
+}
+function updateReel() {
+  if (!reelBuilt) return;
+  const r = reel.getBoundingClientRect();
+  const span = reel.offsetHeight - innerHeight;
+  const rp = span > 0 ? clamp(-r.top / span) : 0;
+  reel.style.setProperty("--rp", rp.toFixed(4));
+  const i = Math.min(SERVICES.length - 1, Math.floor(rp * SERVICES.length));
+  if (i === reelIdx) return;
+  reelIdx = i;
+  $$(".reel__item", reelItems).forEach((el, n) => {
+    const on = n === i;
+    el.classList.toggle("is-on", on);
+    el.setAttribute("aria-hidden", String(!on));
+    $$("a", el).forEach((a) => (a.tabIndex = on ? 0 : -1));
+  });
+  $$("[data-reel-go]", reelList).forEach((b, n) => b.setAttribute("aria-current", String(n === i)));
+  reelN.textContent = String(i + 1).padStart(2, "0");
+}
+
+/* ------------------------------------------------------------------
+   STUDIO — slow zoom on a fixed image
+------------------------------------------------------------------ */
+const studio = $("[data-studio]");
+function updateStudio() {
+  const r = studio.getBoundingClientRect();
+  const span = studio.offsetHeight - innerHeight;
+  const sp = span > 0 ? clamp(-r.top / span) : 0;
+  studio.style.setProperty("--sp", reduce ? 0 : sp.toFixed(4));
+}
+let ticking = false;
+addEventListener("scroll", () => {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => { ticking = false; updateReel(); updateStudio(); });
+}, { passive: true });
+addEventListener("resize", () => { updateReel(); updateStudio(); });
+
+/* ------------------------------------------------------------------
+   BOOKING — validation + confirmation on the page (nothing is sent)
+------------------------------------------------------------------ */
+const form = $("[data-form]");
+const confirmBox = $("[data-confirm]");
+const statusEl = $("[data-form-status]");
+const dateIn = $("#f-date");
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+dateIn.min = iso(tomorrow);
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function setErr(input, msg) {
+  const err = document.getElementById(`${input.id}-err`);
+  if (msg) { input.setAttribute("aria-invalid", "true"); if (err) { err.textContent = msg; err.hidden = false; input.setAttribute("aria-describedby", err.id); } return false; }
+  input.removeAttribute("aria-invalid"); input.removeAttribute("aria-describedby");
+  if (err) { err.textContent = ""; err.hidden = true; }
+  return true;
+}
+function check(input) {
+  const v = input.type === "checkbox" ? input.checked : input.value.trim();
+  switch (input.id) {
+    case "f-name": return setErr(input, v ? "" : "Enter your full name.");
+    case "f-email": return setErr(input, !v ? "Enter your email address." : EMAIL.test(v) ? "" : "Enter an email like name@example.com.");
+    case "f-phone": return setErr(input, v && v.replace(/\D/g, "").length < 10 ? "Use at least 10 digits, or leave it empty." : "");
+    case "f-service": return setErr(input, v ? "" : "Choose a treatment.");
+    case "f-time": return setErr(input, v ? "" : "Choose a time.");
+    case "f-ok": return setErr(input, v ? "" : "Tick the box to confirm you know this is a demo.");
+    case "f-date": {
+      if (!v) return setErr(input, "Choose a date.");
+      const [y, m, d] = v.split("-").map(Number);
+      const day = new Date(y, m - 1, d);
+      if (iso(day) < iso(tomorrow)) return setErr(input, "Choose a date from tomorrow onwards.");
+      if (day.getDay() === 1) return setErr(input, "We're closed on Mondays. Choose another day.");
+      return setErr(input, "");
+    }
+    default: return true;
+  }
+}
+const fields = $$("input, select", form);
+fields.forEach((f) => {
+  f.addEventListener("blur", () => { if ((f.type !== "checkbox" && f.value.trim()) || f.hasAttribute("aria-invalid")) check(f); });
+  f.addEventListener(f.tagName === "SELECT" || f.type === "checkbox" || f.type === "date" ? "change" : "input", () => { if (f.hasAttribute("aria-invalid")) check(f); });
+});
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const ok = fields.map(check);
+  if (ok.includes(false)) {
+    statusEl.textContent = "Some details need fixing. Check the highlighted fields.";
+    fields.find((f) => f.getAttribute("aria-invalid") === "true").focus();
+    return;
+  }
+  statusEl.textContent = "";
+  const val = (id) => $(id).value.trim();
+  const [y, m, d] = val("#f-date").split("-").map(Number);
+  const when = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric" }).format(new Date(y, m - 1, d));
+  const svc = SERVICES.find((s) => s.name === val("#f-service"));
+  const rows = [["Treatment", `${svc.name} (${svc.min} min)`], ["Example price", `$${svc.price}`], ["When", `${when}, ${val("#f-time")}`], ["Name", val("#f-name")], ["Email", val("#f-email")]];
+  if (val("#f-phone")) rows.push(["Phone", val("#f-phone")]);
+  if (val("#f-notes")) rows.push(["Notes", val("#f-notes")]);
+  const dl = $("[data-confirm-list]");
+  dl.innerHTML = "";
+  rows.forEach(([k, v]) => { const div = document.createElement("div"); const dt = document.createElement("dt"); const dd = document.createElement("dd"); dt.textContent = k; dd.textContent = v; div.append(dt, dd); dl.appendChild(div); });
+  $("[data-confirm-name]").textContent = val("#f-name").split(" ")[0];
+  form.hidden = true;
+  confirmBox.hidden = false;
+  confirmBox.focus({ preventScroll: true });
+});
+$("[data-confirm-again]").addEventListener("click", () => {
+  form.reset(); confirmBox.hidden = true; form.hidden = false; $("#f-name").focus();
+});
+
+// Make sure the first frame of text is right even before the loader opens
+updateText(0);
+})();
+</script>
+</body>
+</html>
